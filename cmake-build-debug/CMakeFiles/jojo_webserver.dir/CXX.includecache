@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/usr/jojo/CLionProjects/jojo_webserver/Util.cpp
+Util.h
+/usr/jojo/CLionProjects/jojo_webserver/Util.h
+
+/usr/jojo/CLionProjects/jojo_webserver/Util.h
+iostream
+-
+cstring
+-
+stdio.h
+-
+unistd.h
+-
+fcntl.h
+-
+sys/socket.h
+-
+arpa/inet.h
+-
+
