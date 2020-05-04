@@ -3,6 +3,7 @@
 
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../Epoll.cpp
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../Epoll.h
+CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../HttpRequest.h
 
 CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o: ../HttpRequest.cpp
 CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o: ../HttpRequest.h

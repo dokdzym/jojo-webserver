@@ -5,12 +5,17 @@
 #ifndef JOJO_WEBSERVER_EPOLL_H
 #define JOJO_WEBSERVER_EPOLL_H
 
+class HttpRequest;
+class ThreadPool;
+
+#include"HttpRequest.h"
+#include<iostream>
 #include<functional>
 #include<memory>
 #include<vector>
 #include<sys/epoll.h> // epoll_event
-class HttpRequest;
-class ThreadPool;
+#include<cassert>     // assert
+#include<unistd.h>    //close
 
 using NewConnectionFunc = std::function<void()>;
 using CloseConnectionFunc = std::function<void(HttpRequest*)>;
@@ -19,7 +24,6 @@ using HandleResponseFunc = std::function<void(HttpRequest*)>;
 using Event_Lists = std::vector<epoll_event>;
 
 #define MAX_EVENTS 1024
-
 
 class Epoll {
 public:
@@ -39,8 +43,8 @@ public:
     void Handle_Response(const HandleResponseFunc & Response_){HandlingResponse = Response_;}
 
 private:
-    Event_Lists events;
-    int epoll_fd;
+    Event_Lists _events;
+    int _epoll_fd;
 
     //the following function templates work when epoll gets an event.
     NewConnectionFunc Connecting;

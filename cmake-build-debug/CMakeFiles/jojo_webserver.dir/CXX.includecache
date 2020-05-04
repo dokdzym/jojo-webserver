@@ -6,23 +6,27 @@
 
 #IncludeRegexTransform: 
 
-/usr/jojo/CLionProjects/jojo_webserver/Util.cpp
-Util.h
-/usr/jojo/CLionProjects/jojo_webserver/Util.h
+/usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp
+Epoll.h
+/usr/jojo/CLionProjects/jojo_webserver/Epoll.h
 
-/usr/jojo/CLionProjects/jojo_webserver/Util.h
+/usr/jojo/CLionProjects/jojo_webserver/Epoll.h
+HttpRequest.h
+/usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
 iostream
 -
-cstring
+functional
 -
-stdio.h
+memory
+-
+vector
+-
+sys/epoll.h
+-
+cassert
 -
 unistd.h
 -
-fcntl.h
--
-sys/socket.h
--
-arpa/inet.h
--
+
+/usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
 

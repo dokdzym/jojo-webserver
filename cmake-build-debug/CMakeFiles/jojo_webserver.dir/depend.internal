@@ -4,6 +4,7 @@
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o
  /usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp
  /usr/jojo/CLionProjects/jojo_webserver/Epoll.h
+ /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
 CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o
  /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.cpp
  /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
