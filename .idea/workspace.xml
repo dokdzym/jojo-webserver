@@ -11,9 +11,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,7 +59,7 @@
       <workItem from="1588492169479" duration="5982000" />
       <workItem from="1588506267256" duration="2617000" />
       <workItem from="1588554606311" duration="4346000" />
-      <workItem from="1588757609761" duration="1437000" />
+      <workItem from="1588757609761" duration="1769000" />
     </task>
     <task id="LOCAL-00001" summary="2020.5.6">
       <created>1588759306402</created>
