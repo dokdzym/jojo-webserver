@@ -73,11 +73,13 @@ void Epoll::Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> &threadpool,
             else if(_events[i].events & EPOLLIN) //It is a HTTP request
             {
                 //Set request in WORKING status
+				request -> SetWorking();
                 //wake up thread to handle a request
             }
             else if(_events[i].events & EPOLLOUT) //It is a HTTP response
             {
                 //Set request in WORKING status
+				request -> SetNotWorking();
                 //wake up thread to handle a response
             }
         }

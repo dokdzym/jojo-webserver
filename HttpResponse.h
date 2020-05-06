@@ -5,9 +5,14 @@
 #ifndef JOJO_WEBSERVER_HTTPRESPONSE_H
 #define JOJO_WEBSERVER_HTTPRESPONSE_H
 
+#include "Buffer.h"
+
+#include<string>
+#include<map>
+#include<iostream>
 
 class HttpResponse {
-
+	
 };
 
 

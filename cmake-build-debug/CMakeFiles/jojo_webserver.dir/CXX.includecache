@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+/usr/jojo/CLionProjects/jojo_webserver/Buffer.h
+iostream
+-
+
 /usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp
 Epoll.h
 /usr/jojo/CLionProjects/jojo_webserver/Epoll.h
@@ -29,4 +33,10 @@ unistd.h
 -
 
 /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
+Buffer.h
+/usr/jojo/CLionProjects/jojo_webserver/Buffer.h
+string
+-
+map
+-
 

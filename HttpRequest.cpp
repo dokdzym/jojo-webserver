@@ -4,19 +4,21 @@
 
 #include "HttpRequest.h"
 
-HttpRequest::HttpRequest(int fd):_fd(fd)
+HttpRequest::HttpRequest(int fd):_fd(fd), _working(false), _status(RequestLine), _method(InvalidMethod), _version(UnknownVersion)
 {
-
+	assert(_fd >= 0);
 }
 
 HttpRequest::~HttpRequest() {
-
+	close(_fd);
 }
 
 int HttpRequest::Read(int *httperrno) {
-    return 0;
+	//Read from buffer and save errno;
+	return 0;
 }
 
 int HttpRequest::Write(int *httperrno) {
-    return 0;
+	//Write to buffer and save errno;
+	return 0;
 }

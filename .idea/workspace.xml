@@ -14,10 +14,17 @@
     <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Epoll.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Epoll.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Epoll.h" beforeDir="false" afterPath="$PROJECT_DIR$/Epoll.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HttpRequest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HttpRequest.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HttpResponse.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpResponse.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ThreadPool.h" beforeDir="false" afterPath="$PROJECT_DIR$/ThreadPool.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Epoll.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/ThreadPool.cpp.o" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.internal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.make" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +70,7 @@
       <workItem from="1588492169479" duration="5982000" />
       <workItem from="1588506267256" duration="2617000" />
       <workItem from="1588554606311" duration="4346000" />
+      <workItem from="1588757609761" duration="667000" />
     </task>
     <servers />
   </component>
@@ -98,5 +106,9 @@
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
     <state x="623" y="289" width="672" height="678" key="search.everywhere.popup/0.27.1920.1173@0.27.1920.1173" timestamp="1588494963031" />
+    <state x="685" y="526" width="540" height="182" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1588759243047">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="685" y="526" width="540" height="182" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.27.1920.1173@0.27.1920.1173" timestamp="1588759243047" />
   </component>
 </project>
