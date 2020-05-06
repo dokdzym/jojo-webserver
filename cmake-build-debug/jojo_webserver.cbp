@@ -82,6 +82,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/usr/jojo/CLionProjects/jojo_webserver/Buffer.cpp">
+			<Option target="jojo_webserver"/>
+		</Unit>
+		<Unit filename="/usr/jojo/CLionProjects/jojo_webserver/Buffer.h">
+			<Option target="jojo_webserver"/>
+		</Unit>
 		<Unit filename="/usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp">
 			<Option target="jojo_webserver"/>
 		</Unit>

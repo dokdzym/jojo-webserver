@@ -6,37 +6,21 @@
 
 #IncludeRegexTransform: 
 
+/usr/jojo/CLionProjects/jojo_webserver/Buffer.cpp
+Buffer.h
 /usr/jojo/CLionProjects/jojo_webserver/Buffer.h
-iostream
--
 
-/usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp
-Epoll.h
-/usr/jojo/CLionProjects/jojo_webserver/Epoll.h
-
-/usr/jojo/CLionProjects/jojo_webserver/Epoll.h
-HttpRequest.h
-/usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
-iostream
--
-functional
--
-memory
--
+/usr/jojo/CLionProjects/jojo_webserver/Buffer.h
 vector
 -
-sys/epoll.h
+string
 -
-cassert
+algorithm
+-
+iostream
 -
 unistd.h
 -
-
-/usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
-Buffer.h
-/usr/jojo/CLionProjects/jojo_webserver/Buffer.h
-string
--
-map
+cassert
 -
 

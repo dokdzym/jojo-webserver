@@ -123,6 +123,33 @@ jojo_webserver/fast:
 	$(MAKE) -f CMakeFiles/jojo_webserver.dir/build.make CMakeFiles/jojo_webserver.dir/build
 .PHONY : jojo_webserver/fast
 
+Buffer.o: Buffer.cpp.o
+
+.PHONY : Buffer.o
+
+# target to build an object file
+Buffer.cpp.o:
+	$(MAKE) -f CMakeFiles/jojo_webserver.dir/build.make CMakeFiles/jojo_webserver.dir/Buffer.cpp.o
+.PHONY : Buffer.cpp.o
+
+Buffer.i: Buffer.cpp.i
+
+.PHONY : Buffer.i
+
+# target to preprocess a source file
+Buffer.cpp.i:
+	$(MAKE) -f CMakeFiles/jojo_webserver.dir/build.make CMakeFiles/jojo_webserver.dir/Buffer.cpp.i
+.PHONY : Buffer.cpp.i
+
+Buffer.s: Buffer.cpp.s
+
+.PHONY : Buffer.s
+
+# target to generate assembly for a file
+Buffer.cpp.s:
+	$(MAKE) -f CMakeFiles/jojo_webserver.dir/build.make CMakeFiles/jojo_webserver.dir/Buffer.cpp.s
+.PHONY : Buffer.cpp.s
+
 Epoll.o: Epoll.cpp.o
 
 .PHONY : Epoll.o
@@ -348,6 +375,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... jojo_webserver"
 	@echo "... edit_cache"
+	@echo "... Buffer.o"
+	@echo "... Buffer.i"
+	@echo "... Buffer.s"
 	@echo "... Epoll.o"
 	@echo "... Epoll.i"
 	@echo "... Epoll.s"

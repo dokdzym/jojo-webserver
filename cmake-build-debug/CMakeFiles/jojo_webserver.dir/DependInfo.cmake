@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/usr/jojo/CLionProjects/jojo_webserver/Buffer.cpp" "/usr/jojo/CLionProjects/jojo_webserver/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Buffer.cpp.o"
   "/usr/jojo/CLionProjects/jojo_webserver/Epoll.cpp" "/usr/jojo/CLionProjects/jojo_webserver/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Epoll.cpp.o"
   "/usr/jojo/CLionProjects/jojo_webserver/HttpRequest.cpp" "/usr/jojo/CLionProjects/jojo_webserver/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o"
   "/usr/jojo/CLionProjects/jojo_webserver/HttpResponse.cpp" "/usr/jojo/CLionProjects/jojo_webserver/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o"

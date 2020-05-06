@@ -12,19 +12,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="">
+      <change afterPath="$PROJECT_DIR$/Buffer.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Buffer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Epoll.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Epoll.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpRequest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpRequest.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpResponse.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpResponse.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ThreadPool.h" beforeDir="false" afterPath="$PROJECT_DIR$/ThreadPool.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Epoll.cpp.o" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/ThreadPool.cpp.o" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/depend.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +33,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1bNcUhFZu6pI4qQZMRERfTRSarb" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="添加" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -70,18 +67,46 @@
       <workItem from="1588492169479" duration="5982000" />
       <workItem from="1588506267256" duration="2617000" />
       <workItem from="1588554606311" duration="4346000" />
-      <workItem from="1588757609761" duration="667000" />
+      <workItem from="1588757609761" duration="1191000" />
     </task>
+    <task id="LOCAL-00001" summary="2020.5.6">
+      <created>1588759306402</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1588759306402</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="2020.5.6" />
+    <option name="LAST_COMMIT_MESSAGE" value="2020.5.6" />
   </component>
   <component name="WindowStateProjectService">
     <state x="741" y="332" width="438" height="569" key="#com.intellij.ide.util.MemberChooser" timestamp="1588557463673">
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
     <state x="741" y="332" width="438" height="569" key="#com.intellij.ide.util.MemberChooser/0.27.1920.1173@0.27.1920.1173" timestamp="1588557463673" />
+    <state x="693" y="362" width="524" height="509" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1588759646755">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="693" y="362" width="524" height="509" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.27.1920.1173@0.27.1920.1173" timestamp="1588759646755" />
+    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2" timestamp="1588759305919">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2/0.27.1920.1173@0.27.1920.1173" timestamp="1588759305919" />
+    <state x="100" y="127" width="1720" height="973" key="DiffContextDialog" timestamp="1588759853146">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="100" y="127" width="1720" height="973" key="DiffContextDialog/0.27.1920.1173@0.27.1920.1173" timestamp="1588759853146" />
+    <state x="749" y="513" key="Github.CreateGistDialog" timestamp="1588759390358">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="749" y="513" key="Github.CreateGistDialog/0.27.1920.1173@0.27.1920.1173" timestamp="1588759390358" />
     <state width="1872" height="315" key="GridCell.Tab.0.bottom" timestamp="1588558916614">
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
