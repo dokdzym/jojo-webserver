@@ -12,13 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="">
-      <change afterPath="$PROJECT_DIR$/Buffer.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Buffer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ThreadPool.h" beforeDir="false" afterPath="$PROJECT_DIR$/ThreadPool.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +61,7 @@
       <workItem from="1588492169479" duration="5982000" />
       <workItem from="1588506267256" duration="2617000" />
       <workItem from="1588554606311" duration="4346000" />
-      <workItem from="1588757609761" duration="1191000" />
+      <workItem from="1588757609761" duration="1437000" />
     </task>
     <task id="LOCAL-00001" summary="2020.5.6">
       <created>1588759306402</created>
@@ -76,17 +70,30 @@
       <option name="project" value="LOCAL" />
       <updated>1588759306402</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="2020.5.6">
+      <created>1588759898732</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1588759898732</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="2020.5.6" />
     <option name="LAST_COMMIT_MESSAGE" value="2020.5.6" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="759" y="418" width="392" height="397" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1588759919753">
+      <screen x="0" y="27" width="1920" height="1173" />
+    </state>
+    <state x="759" y="418" width="392" height="397" key="#com.intellij.fileTypes.FileTypeChooser/0.27.1920.1173@0.27.1920.1173" timestamp="1588759919753" />
     <state x="741" y="332" width="438" height="569" key="#com.intellij.ide.util.MemberChooser" timestamp="1588557463673">
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
@@ -95,10 +102,10 @@
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
     <state x="693" y="362" width="524" height="509" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.27.1920.1173@0.27.1920.1173" timestamp="1588759646755" />
-    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2" timestamp="1588759305919">
+    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2" timestamp="1588759898424">
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
-    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2/0.27.1920.1173@0.27.1920.1173" timestamp="1588759305919" />
+    <state x="515" y="153" width="880" height="928" key="CommitChangelistDialog2/0.27.1920.1173@0.27.1920.1173" timestamp="1588759898424" />
     <state x="100" y="127" width="1720" height="973" key="DiffContextDialog" timestamp="1588759853146">
       <screen x="0" y="27" width="1920" height="1173" />
     </state>
