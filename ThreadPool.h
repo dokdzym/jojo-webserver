@@ -5,17 +5,19 @@
 #ifndef JOJO_WEBSERVER_THREADPOOL_H
 #define JOJO_WEBSERVER_THREADPOOL_H
 
+#include<iostream>
 #include<functional>
 #include<thread>
 #include<queue>
 #include<mutex>
-#include <condition_variable>
+#include<condition_variable>
+#include<cassert>
 
 using ThreadFunction = std::function<void()>;
 
 class ThreadPool {
 public:
-	ThreadPool(int num_threads);
+	ThreadPool(int num_threads)
 	~ThreadPool();
 	
 	void AssignJob(const ThreadFunction& job);
