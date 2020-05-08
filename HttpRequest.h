@@ -10,6 +10,8 @@
 #include<string>
 #include<map>
 
+class Buffer;
+
 enum ParseStatus{RequestLine = 0, Headers, Body, Finished};
 enum Method{InvalidMethod = -1, Get, Post, Head, Put, Delete};
 enum HttpVersion{UnknownVersion = -1, HTTP10, HTTP11};
@@ -19,8 +21,10 @@ public:
     HttpRequest(int fd);
     ~HttpRequest();
 
+	//Get private member
     int GetFd() {return _fd;}
-
+	int GetWorking() {return _working;}
+	
     int Read(int* httperrno);
     int Write(int* httperrno);
 
@@ -29,7 +33,6 @@ public:
     void SetNotWorking() { _working = false; }
     bool WorkingStatus() {return _working;}
 
-	
 private:
 	//About basic attribution
     int _fd;

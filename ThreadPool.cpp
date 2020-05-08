@@ -6,29 +6,29 @@
 
 ThreadPool::ThreadPool(int num_threads):_shutdown(true)
 {
-	num_threads = num_threads <= 0 ? 1 : num_threads；
+	num_threads = num_threads <= 0 ? 1 : num_threads;
 	
 	for(int i = 0; i < num_threads; ++ i)
 		_threads.emplace_back(
 		[this]()
 		{
-			while(1)
+			while(true)
 			{
 				ThreadFunction func;
 				{
 				std::unique_lock<std::mutex> lock(_lock);
-				while(shutdown && _jobs.empty())
+				while(_shutdown && _jobs.empty())
 					_cond.wait(lock);
-				if(_jobs.empty() && !shutdown)
+				if(_jobs.empty() && !_shutdown)
 					return ;
 				func = _jobs.front(); //Thread get a job
 				_jobs.pop();  //Job lists pop first job out
 				}//free lock
-			if(func())
+			if(func)
 				func();
 			}
 		}
-		)
+		);
 }
 
 ThreadPool::~ThreadPool()

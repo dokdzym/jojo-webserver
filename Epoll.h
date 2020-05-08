@@ -8,7 +8,6 @@
 class HttpRequest;
 class ThreadPool;
 
-#include"HttpRequest.h"
 #include<iostream>
 #include<functional>
 #include<memory>
@@ -31,16 +30,16 @@ public:
     ~Epoll();
     int Epoll_Wait(int timeout);
 
-    int Epoll_Add(int fd, HttpRequest * request, int events);//add
-    int Epoll_Mod(int fd, HttpRequest * request, int events);//modify
-    int Epoll_Del(int fd, HttpRequest * request, int events);//delete
+    int Add_Epoll(int fd, HttpRequest * request, int events);//add
+    int Mod_Epoll(int fd, HttpRequest * request, int events);//modify
+    int Del_Epoll(int fd, HttpRequest * request, int events);//delete
 
     void Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> & threadpool, int events_num);
 
     void Connect_(const NewConnectionFunc & Connecting_){Connecting = Connecting_;}
     void Close_(const CloseConnectionFunc & Closing_){Closing = Closing_;}
-    void Handle_Request(const HandleRequestFunc & Request_){HandlingRequest = Request_;}
-    void Handle_Response(const HandleResponseFunc & Response_){HandlingResponse = Response_;}
+    void Handle_Request_(const HandleRequestFunc & Request_){HandlingRequest = Request_;}
+    void Handle_Response_(const HandleResponseFunc & Response_){HandlingResponse = Response_;}
 
 private:
     Event_Lists _events;

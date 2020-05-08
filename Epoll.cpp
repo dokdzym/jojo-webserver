@@ -3,7 +3,8 @@
 //
 
 #include "Epoll.h"
-
+#include "HttpRequest.h"
+#include "ThreadPool.h"
 Epoll::Epoll() :_epoll_fd(epoll_create1(EPOLL_CLOEXEC)),
                 _events (MAX_EVENTS)
 {
@@ -24,7 +25,7 @@ int Epoll::Epoll_Wait(int timeout) {
     return events_num;
 }
 
-int Epoll::Epoll_Add(int fd, HttpRequest *request, int events) {
+int Epoll::Add_Epoll(int fd, HttpRequest *request, int events) {
     struct epoll_event event;
     event.events = events;
     event.data.ptr = (void*)request;
@@ -32,7 +33,7 @@ int Epoll::Epoll_Add(int fd, HttpRequest *request, int events) {
     return ret;
 }
 
-int Epoll::Epoll_Mod(int fd, HttpRequest *request, int events) {
+int Epoll::Mod_Epoll(int fd, HttpRequest *request, int events) {
     struct epoll_event event;
     event.events = events;
     event.data.ptr = (void*)request;
@@ -40,7 +41,7 @@ int Epoll::Epoll_Mod(int fd, HttpRequest *request, int events) {
     return ret;
 }
 
-int Epoll::Epoll_Del(int fd, HttpRequest *request, int events) {
+int Epoll::Del_Epoll(int fd, HttpRequest *request, int events) {
     struct epoll_event event;
     event.events = events;
     event.data.ptr = (void*)request;
@@ -75,8 +76,8 @@ void Epoll::Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> &threadpool,
                 //Set request in WORKING status
 				request -> SetWorking();
                 //wake up thread to handle a request
-				threadpool -> AssignJob(std::bind(HandlingRequest, request)); 
-			}
+                threadpool -> AssignJob(std::bind(HandlingRequest, request));
+            }
             else if(_events[i].events & EPOLLOUT) //It is a HTTP response
             {
                 //Set request in WORKING status

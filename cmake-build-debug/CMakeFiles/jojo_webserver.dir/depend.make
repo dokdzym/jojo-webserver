@@ -8,6 +8,7 @@ CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../Buffer.h
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../Epoll.cpp
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../Epoll.h
 CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../HttpRequest.h
+CMakeFiles/jojo_webserver.dir/Epoll.cpp.o: ../ThreadPool.h
 
 CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o: ../Buffer.h
 CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o: ../HttpRequest.cpp
@@ -17,8 +18,14 @@ CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o: ../Buffer.h
 CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o: ../HttpResponse.cpp
 CMakeFiles/jojo_webserver.dir/HttpResponse.cpp.o: ../HttpResponse.h
 
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Buffer.h
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Epoll.h
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../HttpRequest.h
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../HttpResponse.h
 CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Server.cpp
 CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Server.h
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../ThreadPool.h
+CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Timer.h
 CMakeFiles/jojo_webserver.dir/Server.cpp.o: ../Util.h
 
 CMakeFiles/jojo_webserver.dir/ThreadPool.cpp.o: ../ThreadPool.cpp

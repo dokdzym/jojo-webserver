@@ -5,6 +5,13 @@
 #ifndef JOJO_WEBSERVER_SERVER_H
 #define JOJO_WEBSERVER_SERVER_H
 
+#include "HttpRequest.h"
+#include "HttpResponse.h"
+#include "Util.h"
+#include "Epoll.h"
+#include "ThreadPool.h"
+#include "Timer.h"
+
 #include<memory> //C++ 11 locks
 #include<mutex>
 

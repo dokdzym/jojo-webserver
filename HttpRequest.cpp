@@ -4,7 +4,12 @@
 
 #include "HttpRequest.h"
 
-HttpRequest::HttpRequest(int fd):_fd(fd), _working(false), _status(RequestLine), _method(InvalidMethod), _version(UnknownVersion)
+HttpRequest::HttpRequest(int fd):
+    _fd(fd),
+    _working(false),
+    _status(RequestLine),
+    _method(InvalidMethod),
+    _version(UnknownVersion)
 {
 	assert(_fd >= 0);
 }

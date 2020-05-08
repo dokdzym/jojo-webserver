@@ -17,7 +17,7 @@ using ThreadFunction = std::function<void()>;
 
 class ThreadPool {
 public:
-	ThreadPool(int num_threads)
+	ThreadPool(int num_threads);
 	~ThreadPool();
 	
 	void AssignJob(const ThreadFunction& job);
