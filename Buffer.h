@@ -75,6 +75,22 @@ public:
 		append(b.Read_Peek(), b.Readable_Bytes());
 	}
 	
+	const char* Find_CRLF() const
+    {
+        const char CRLF[] = "\r\n";
+        const char* crlf = std::search(Reader_Peek(), Write_Peek(), CRLF, CRLF+2);
+        return crlf == Write_Peek() ? nullptr : crlf;
+    }
+
+    const char* Find_CRLF(const char* start) const
+    {
+        assert(Reader_Peek() <= start);
+        assert(start <= Write_Peek());
+        const char CRLF[] = "\r\n";
+        const char* crlf = std::search(start, Write_Peek(), CRLF, CRLF + 2);
+        return crlf == Write_Peek() ? nullptr : crlf;
+    }
+	
 private:
 	char* Buffer_Begin(){return &*_buffer.begin();}
 	
