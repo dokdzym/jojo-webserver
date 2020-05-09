@@ -27,11 +27,28 @@ public:
     int Read(int* httperrno);
     int Write(int* httperrno);
 	
-	//Get private member
-    int GetFd() {return _fd;}
-	int GetWorking() {return _working;}
-	bool Parse_All() {return Finished == _status;}
-    bool WorkingStatus() {return _working;}
+	
+	//About Timer
+	void Set_Timer(Timer* timer) {_timer = timer;}
+	Timer* Get_Timer() const{return _timer;}
+	
+	
+	//About Buffer
+	void Append_Out_Buf(const Buffer& buf) {_out_buf.append(buf);}
+	int Writable_Bytes() {return _out_buf.Readable_Bytes();}
+	
+	
+	//Get HTTP status
+    int GetFd() const {return _fd;}
+	int GetWorking() const {return _working;}
+	bool Parse_All() const {return Finished == _status;}
+    bool WorkingStatus() const {return _working;}
+	bool Is_KeepAlive() const;
+	
+	std::string Get_Path() const {return _path;}
+	std::string Get_Query() const {return _query;}
+    std::string Get_Header(const std::string& field) const;
+    std::string Get_Method() const;
 	
 	
 	//Set work status
@@ -41,18 +58,22 @@ public:
 	//Parse HTTP request
 	bool Parse_Request();
 	bool Parse_Request_Line(const char* begin, const char* end);
-	
+
+private:
 	//Set path/method/query/version
 	void Set_Path(const char* begin, const char* end);
 	void Set_Method(const char* begin, const char* end);
 	void Set_Query(const char* begin, const char* end);
 	void Set_Version(HttpVersion version);
-	
+	void Add_Head(const char* start, const char* colon, const char* end);
 	
 private:
 	//About basic attribution
     int _fd;
     bool _working;
+	
+	//About Timer
+	Timer* _timer;
 	
 	//About Buffer
 	Buffer _in_buf;

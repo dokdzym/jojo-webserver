@@ -32,6 +32,40 @@ int HttpRequest::Write(int* err_no) {
 	return ret;
 }
 
+bool HttpRequest::Is_KeepAlive() const
+{
+	std::string status = Get_Header("Connection");
+	return ("Keep-Alive" == status)||(HTTP11 == _version && "close" != status);
+}
+
+std::string HttpRequest::Get_Header(const std::string& field) const
+{
+	std::string res;
+	auto itr = _header.find(field);
+	if(itr != _header.end())
+		res = itr -> second;
+	return res;
+}
+
+std::string Get_Method() const
+{	
+	std::string res;
+	if(GET == _method)
+		res = "GET";
+	else if(POST == res)
+		res = "POST";
+	else if(HEAD == res)
+		res = "HEAD";
+	else if(PUT == res)
+		res = "PUT";
+	else if(DELETE == res)
+		res = "DELETE";
+	else
+		res = "ERROR";
+	
+	return res;
+}
+
 bool HttpRequest::Parse_Request()
 {
 	bool ok = true;
@@ -157,4 +191,19 @@ void HttpRequest::Set_Query(const char* begin, const char* end)
 void HttpRequest::Set_Version(HttpVersion version)
 {
 	_version = version;
+}
+
+
+void HttpVersion::Add_Header(const char* start, const char* colon, const char* end)
+{
+	std::string field(start, colon);
+	++ colon;
+	while(colon < end && ' ' == *colon)
+		++ colon;//skip spaces at the beginning
+	
+	std::string str(colon, end);
+	while(!str.empty() && str[str.size() - 1] == ' ')
+		str.resize(str.size() - 1);//Delete spaces at the end
+	
+	_headers[field] = str;
 }
