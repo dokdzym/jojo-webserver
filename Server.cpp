@@ -11,7 +11,7 @@ Server::Server(int port, int num_threads):
 	_threadpool(new ThreadPool(num_threads)),
 	_listen(new HttpRequest(_listen_fd)),
 	_epoll(new Epoll()),
-	_timer(new Timer())
+	_timer(new TimerManager())
 	
 {
 	assert(_listen_fd >= 0);
@@ -66,8 +66,8 @@ void Server::ConnectTCP()
 
 void Server::CloseTCP(HttpRequest* request)
 {
-	int fd = request -> GetFd();
-	if(request -> GetWorking())
+	int fd = request -> Get_Fd();
+	if(request -> Get_Working())
 		return ;
 	//Close TCP connection only when the request is not working
 	//TODO : _timer -> Del_Timer(request);
@@ -80,8 +80,8 @@ void Server::CloseTCP(HttpRequest* request)
 void Server::HandleRequest(HttpRequest* request)
 {
 	_timer -> Del_Timer(request);
-	assert(reuest != nullptr);
-	inf fd = request -> GetFd();
+	assert(request != nullptr);
+	int fd = request -> Get_Fd();
 	
 	int read_errno;
 	int nread = request -> Read(&read_errno);
@@ -90,7 +90,7 @@ void Server::HandleRequest(HttpRequest* request)
 	if(0 == nread || (nread < 0 && (read_errno != EAGAIN)))
 	{
 		request -> Set_Not_Working();
-		Close(request);
+		CloseTCP(request);
 		return ;
 	}
 	
@@ -113,7 +113,7 @@ void Server::HandleRequest(HttpRequest* request)
 		int write_errno;
 		request -> Write(&write_errno);
 		request -> Set_Not_Working();
-		CloseTCP();
+		CloseTCP(request);
 		return ;
 	}
 	
@@ -129,5 +129,48 @@ void Server::HandleRequest(HttpRequest* request)
 
 void Server::HandleResponse(HttpRequest* request)
 {
-	//TODO
+	_timer -> Del_Timer(request);
+    assert(request != nullptr);
+    int fd = request -> Get_Fd();
+
+    int to_write = request -> Writable_Bytes();
+
+    if(to_write == 0) {
+        _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
+        request -> Set_Not_Working();
+        _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+        return ;
+    }
+
+    int write_errno;
+    int ret = request -> Write(&write_errno);
+
+    if(ret < 0 && write_errno == EAGAIN) {
+        _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+        return ;
+    }
+
+    if(ret < 0 && (write_errno != EAGAIN)) {
+        request -> Set_Not_Working();
+        CloseTCP(request);
+        return ; 
+    }
+
+    if(ret == to_write) {
+        if(request -> Is_KeepAlive()) {
+            request -> Reset_Parse();
+            _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
+            request -> Set_Not_Working();
+            _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+        } else {
+            request -> Set_Not_Working();
+            CloseTCP(request);
+        }
+        return;
+    }
+
+    _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+    request -> Set_Not_Working();
+    _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+    return;
 }

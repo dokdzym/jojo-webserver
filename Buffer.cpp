@@ -22,7 +22,7 @@ ssize_t Buffer::Read_Fd(int fd, int* err_no)
 	struct iovec vec[2];
 	const size_t writable_bytes = Writable_Bytes();
 	
-	vec[0].iov_base = Buffer_Begin() + writer_index;
+	vec[0].iov_base = Buffer_Begin() + _writer_index;
 	vec[0].iov_len = writable_bytes;
 	vec[1].iov_base = extra_buf;
 	vec[1].iov_len = sizeof(extra_buf);
@@ -35,19 +35,20 @@ ssize_t Buffer::Read_Fd(int fd, int* err_no)
 		*err_no = errno;
 	}
 	else if(static_cast<size_t>(n) <= writable_bytes)
-		writer_index += n;
+        _writer_index += n;
 	else
 	{
-		writer_index = _buffer.size();
-		append(extrabuf, n - writable_bytes);
+        _writer_index = _buffer.size();
+		Append(extra_buf, n - writable_bytes);
 	}
+	return n;
 }
 
 
 ssize_t Buffer::Write_Fd(int fd, int* err_no)
 {
 	size_t n_left = Readable_Bytes();
-	char* buf = Buffer_Begin() + reader_index;
+	char* buf = Buffer_Begin() + _reader_index;
 	ssize_t n;
 	
 	if((n = write(fd, buf, n_left)) <= 0)
@@ -63,7 +64,7 @@ ssize_t Buffer::Write_Fd(int fd, int* err_no)
 	}
 	else
 	{
-		reader_index += n;
+        _reader_index += n;
 		return n;
 	}
 }

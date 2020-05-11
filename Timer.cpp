@@ -3,11 +3,11 @@
 //
 
 #include "Timer.h"
-#include "HttpRequest"
+#include "HttpRequest.h"
 
 void TimerManager::Add_Timer(HttpRequest* request, const int& timeout, const TimeoutFunction& func)
 {
-	std::unique_loc<std::mutex> lock(_lock);
+	std::unique_lock<std::mutex> lock(_lock);
 	
 	assert(request != nullptr);
 	
@@ -55,7 +55,7 @@ void TimerManager::Handle_Expire_Timers()
 		if(std::chrono::duration_cast<MS>(timer -> Get_Expire_Time() - _cur_time).count() > 0)//Head timer not expire ---> all timer not expire
 			return ;
 		
-		timer -> _call_back();
+		timer -> Call_Back();
 		_timer_queue.pop();
 		delete timer;
 	}

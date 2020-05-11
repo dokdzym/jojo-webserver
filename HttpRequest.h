@@ -34,13 +34,13 @@ public:
 	
 	
 	//About Buffer
-	void Append_Out_Buf(const Buffer& buf) {_out_buf.append(buf);}
+	void Append_Out_Buf(const Buffer& buf) {_out_buf.Append(buf);}
 	int Writable_Bytes() {return _out_buf.Readable_Bytes();}
 	
 	
 	//Get HTTP status
-    int GetFd() const {return _fd;}
-	int GetWorking() const {return _working;}
+    int Get_Fd() const {return _fd;}
+	int Get_Working() const {return _working;}
 	bool Parse_All() const {return Finished == _status;}
     bool WorkingStatus() const {return _working;}
 	bool Is_KeepAlive() const;
@@ -54,7 +54,8 @@ public:
 	//Set work status
     void Set_Working() {_working = true; }
     void Set_Not_Working() { _working = false; }
-
+	void Reset_Parse();
+	
 	//Parse HTTP request
 	bool Parse_Request();
 	bool Parse_Request_Line(const char* begin, const char* end);
@@ -62,7 +63,7 @@ public:
 private:
 	//Set path/method/query/version
 	void Set_Path(const char* begin, const char* end);
-	void Set_Method(const char* begin, const char* end);
+	bool Set_Method(const char* begin, const char* end);
 	void Set_Query(const char* begin, const char* end);
 	void Set_Version(HttpVersion version);
 	void Add_Head(const char* start, const char* colon, const char* end);

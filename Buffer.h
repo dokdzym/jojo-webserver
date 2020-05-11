@@ -5,10 +5,10 @@
 #ifndef JOJO_WEBSERVER_BUFFER_H
 #define JOJO_WEBSERVER_BUFFER_H
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm> // copy
-#include <iostream>
 #include <unistd.h> //close
 #include <cassert>
 
@@ -18,34 +18,34 @@ class Buffer
 {
 public:
     Buffer();
-    ~Buffer();
+    ~Buffer(){}
 	
 	//TODO in Buffer.cpp
 	ssize_t Read_Fd(int fd, int* err_no);
 	ssize_t Write_Fd(int fd, int* err_no);
 	
-	size_t Readable_Bytes() const {return writer_index - reader_index;}
-	size_t Writable_Bytes() const {return BUFFER_SIZE - writer_index;}
-	size_t Prependable_Bytes const {return reader_index;}
+	size_t Readable_Bytes() const {return _writer_index - _reader_index;}
+	size_t Writable_Bytes() const {return BUFFER_SIZE - _writer_index;}
+	size_t Prependable_Bytes( )const {return _reader_index;}
 	
 	//Get first readable/writable position
-	const char* Read_Peek() const {return Buffer_Begin() + reader_index;}
-	const char* Write_Peek() const {return Buffer_Begin() + writer_index;}
-	char* Write_Peek() {return Buffer_Begin() + writer_index;}
+	const char* Read_Peek() const {return Buffer_Begin() + _reader_index;}
+	const char* Write_Peek() const {return Buffer_Begin() + _writer_index;}
+	char* Write_Peek() {return Buffer_Begin() + _writer_index;}
 	
 	//Change reader_index 
-	void Retrieve(size_t len){assert(len <= Readable_Bytes()); reader_index += len;}
+	void Retrieve(size_t len){assert(len <= Readable_Bytes()); _reader_index += len;}
 	void Retrieve_Until(const char* end)
 	{
 		assert(Write_Peek() <= end);
 		assert(end <=  Write_Peek());
 		Retrieve(end - Read_Peek());
 	}
-	void Reset_Index(){reader_index = writer_index = 0;}
+	void Reset_Index(){_reader_index = _writer_index = 0;}
 	
 	std::string Retrieve_String()
 	{
-		std:: res(Read_Peek(), Readable_Bytes());
+		std::string res(Read_Peek(), Readable_Bytes());
 		Reset_Index();
 		return res;
 	}
@@ -62,29 +62,29 @@ public:
 	{
 		Ensure_Enough_For_Write(len);
 		std::copy(data, data + len, Write_Peek());
-		writer_index += len;
+        _writer_index += len;
 	}
 	
-	void Append(std::string& str)
+	void Append(const std::string& str)
 	{
 		Append(str.data(), str.size());
 	}
 	
 	void Append(const Buffer& b)
 	{
-		append(b.Read_Peek(), b.Readable_Bytes());
+		Append(b.Read_Peek(), b.Readable_Bytes());
 	}
 	
 	const char* Find_CRLF() const
     {
         const char CRLF[] = "\r\n";
-        const char* crlf = std::search(Reader_Peek(), Write_Peek(), CRLF, CRLF+2);
+        const char* crlf = std::search(Read_Peek(), Write_Peek(), CRLF, CRLF+2);
         return crlf == Write_Peek() ? nullptr : crlf;
     }
 
     const char* Find_CRLF(const char* start) const
     {
-        assert(Reader_Peek() <= start);
+        assert(Read_Peek() <= start);
         assert(start <= Write_Peek());
         const char CRLF[] = "\r\n";
         const char* crlf = std::search(start, Write_Peek(), CRLF, CRLF + 2);
@@ -93,27 +93,28 @@ public:
 	
 private:
 	char* Buffer_Begin(){return &*_buffer.begin();}
+    const char* Buffer_Begin() const {return &*_buffer.begin();}
 	
 	void Make_Space(size_t len)
 	{
 		if(Writable_Bytes() + Prependable_Bytes() < len)
-			_buffer.resize(writer_index + len);
+			_buffer.resize(_writer_index + len);
 		else
 		{
 			size_t readble = Readable_Bytes();
-			std::copy(Buffer_Begin() + reader_index,
-					  Buffer_Begin() + writer_index,
+			std::copy(Buffer_Begin() + _reader_index,
+					  Buffer_Begin() + _writer_index,
 					  Buffer_Begin());
-			reader_index = 0;
-			writer_index = readble;
+            _reader_index = 0;
+            _writer_index = readble;
 			assert(readble == Readable_Bytes());
 		}
 	}
 
 private:
 	std::vector<char> _buffer;
-	size_t reader_index;
-	size_t writer_index;
+	size_t _reader_index;
+	size_t _writer_index;
 };
 
 

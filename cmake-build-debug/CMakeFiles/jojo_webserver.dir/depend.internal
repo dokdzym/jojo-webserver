@@ -32,6 +32,8 @@ CMakeFiles/jojo_webserver.dir/ThreadPool.cpp.o
  /usr/jojo/CLionProjects/jojo_webserver/ThreadPool.cpp
  /usr/jojo/CLionProjects/jojo_webserver/ThreadPool.h
 CMakeFiles/jojo_webserver.dir/Timer.cpp.o
+ /usr/jojo/CLionProjects/jojo_webserver/Buffer.h
+ /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
  /usr/jojo/CLionProjects/jojo_webserver/Timer.cpp
  /usr/jojo/CLionProjects/jojo_webserver/Timer.h
 CMakeFiles/jojo_webserver.dir/Util.cpp.o

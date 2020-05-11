@@ -56,7 +56,7 @@ void Epoll::Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> &threadpool,
         //Get HTTP request corresponding with the event
         //HttpRequest* request = static_cast<HttpRequest*>(events[i].data.ptr);
         HttpRequest* request = static_cast<HttpRequest*>(_events[i].data.ptr);
-        int fd = request  -> GetFd();
+        int fd = request  -> Get_Fd();
 
         if(fd == listen_fd)
             Connecting(); //New connection
@@ -74,14 +74,14 @@ void Epoll::Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> &threadpool,
             else if(_events[i].events & EPOLLIN) //It is a HTTP request
             {
                 //Set request in WORKING status
-				request -> SetWorking();
+				request -> Set_Working();
                 //wake up thread to handle a request
                 threadpool -> AssignJob(std::bind(HandlingRequest, request));
             }
             else if(_events[i].events & EPOLLOUT) //It is a HTTP response
             {
                 //Set request in WORKING status
-				request -> SetNotWorking();
+				request -> Set_Not_Working();
                 //wake up thread to handle a response
 				threadpool -> AssignJob(std::bind(HandlingResponse, request));
             }

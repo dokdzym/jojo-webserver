@@ -47,18 +47,18 @@ std::string HttpRequest::Get_Header(const std::string& field) const
 	return res;
 }
 
-std::string Get_Method() const
+std::string HttpRequest::Get_Method() const
 {	
 	std::string res;
 	if(GET == _method)
 		res = "GET";
-	else if(POST == res)
+	else if(POST == _method)
 		res = "POST";
-	else if(HEAD == res)
+	else if(HEAD == _method)
 		res = "HEAD";
-	else if(PUT == res)
+	else if(PUT == _method)
 		res = "PUT";
-	else if(DELETE == res)
+	else if(DELETE == _method)
 		res = "DELETE";
 	else
 		res = "ERROR";
@@ -66,12 +66,22 @@ std::string Get_Method() const
 	return res;
 }
 
+void HttpRequest::Reset_Parse()
+{
+	_status = RequestLine;
+	_method = InvalidMethod;
+	_version = UnknownVersion;
+	_path = "";
+	_query = "";
+	_header.clear();
+}
+
 bool HttpRequest::Parse_Request()
 {
 	bool ok = true;
 	bool has_more = true;
 	
-	while(hasmore)
+	while(has_more)
 	{
 		if(RequestLine == _status) //Handle request line
 		{
@@ -85,10 +95,10 @@ bool HttpRequest::Parse_Request()
 					_status = Headers;
 				}
 				else
-					hasmore = false;//error occurs!
+					has_more = false;//error occurs!
 			}
 			else
-				hasmore = false;//error occurs!
+				has_more = false;//error occurs!
 		}
 		else if(Headers == _status) //Handle headers
 		{
@@ -97,16 +107,16 @@ bool HttpRequest::Parse_Request()
 			{
 				const char* colon = std::find(_in_buf.Read_Peek(), crlf, ':');
 				if(colon != crlf)
-					Add_Header(_in_buf, colon, crlf);
+					Add_Head(_in_buf.Read_Peek(), colon, crlf);
 				else
 				{
 					_status = Finished;
-					hasmore = false;
+					has_more = false;
 				}
 				_in_buf.Retrieve_Until(crlf + 2);
 			}
 			else
-				hasmore =false;
+				has_more =false;
 		}
 		else if(Body == _status)
 			;//Handle body
@@ -163,7 +173,7 @@ void HttpRequest::Set_Path(const char* begin, const char* end)
 	_path = STATIC_ROOT + path;
 }
 
-void HttpRequest::Set_Method(const char* begin, const char* end) 
+bool HttpRequest::Set_Method(const char* begin, const char* end)
 {
 	std::string method(begin, end);
 	if("GET" == method)
@@ -194,7 +204,7 @@ void HttpRequest::Set_Version(HttpVersion version)
 }
 
 
-void HttpVersion::Add_Header(const char* start, const char* colon, const char* end)
+void HttpRequest::Add_Head(const char* start, const char* colon, const char* end)
 {
 	std::string field(start, colon);
 	++ colon;
@@ -204,6 +214,6 @@ void HttpVersion::Add_Header(const char* start, const char* colon, const char* e
 	std::string str(colon, end);
 	while(!str.empty() && str[str.size() - 1] == ' ')
 		str.resize(str.size() - 1);//Delete spaces at the end
-	
-	_headers[field] = str;
+
+	_header[field] = str;
 }
