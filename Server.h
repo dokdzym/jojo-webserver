@@ -22,12 +22,12 @@
 class HttpRequest;
 class Epoll;
 class ThreadPool;
-class Timer;
+class TimerManager;
 
 using TheadPoolPtr = std::shared_ptr<ThreadPool>;
 using ListenPtr    = std::unique_ptr<HttpRequest>;
 using EpollPtr     = std::unique_ptr<Epoll>;
-using TimerPtr     = std::unique_ptr<Timer>;
+using TimerPtr     = std::unique_ptr<TimerManager>;
 
 
 class Server {

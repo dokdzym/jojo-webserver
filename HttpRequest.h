@@ -52,8 +52,8 @@ public:
 	
 	
 	//Set work status
-    void SetWorking() {_working = true; }
-    void SetNotWorking() { _working = false; }
+    void Set_Working() {_working = true; }
+    void Set_Not_Working() { _working = false; }
 
 	//Parse HTTP request
 	bool Parse_Request();

@@ -79,7 +79,52 @@ void Server::CloseTCP(HttpRequest* request)
 
 void Server::HandleRequest(HttpRequest* request)
 {
-	//TODO
+	_timer -> Del_Timer(request);
+	assert(reuest != nullptr);
+	inf fd = request -> GetFd();
+	
+	int read_errno;
+	int nread = request -> Read(&read_errno);
+	
+	//Server close the connection OR error occurs ；close TCP
+	if(0 == nread || (nread < 0 && (read_errno != EAGAIN)))
+	{
+		request -> Set_Not_Working();
+		Close(request);
+		return ;
+	}
+	
+	//EAGAIN occurs : free thread, continue listening
+	if(nread < 0 && read_errno == EAGAIN)
+	{
+		_epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
+		request -> Set_Not_Working();
+		_timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+		return ;
+	}
+	
+	//Parse failed
+	if(!request -> Parse_Request())
+	{
+		//HTTP status code 400
+		HttpResponse response(400, "", false);
+		request -> Append_Out_Buf(response.Make_Response());
+		
+		int write_errno;
+		request -> Write(&write_errno);
+		request -> Set_Not_Working();
+		CloseTCP();
+		return ;
+	}
+	
+	//Parse succeed
+	if(request -> Parse_All())
+	{
+        HttpResponse response(200, request -> Get_Path(), request -> Is_KeepAlive());
+		request -> Append_Out_Buf(response.Make_Response());
+		_epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+	}
+	
 }
 
 void Server::HandleResponse(HttpRequest* request)
