@@ -40,4 +40,12 @@ CMakeFiles/jojo_webserver.dir/Util.cpp.o
  /usr/jojo/CLionProjects/jojo_webserver/Util.cpp
  /usr/jojo/CLionProjects/jojo_webserver/Util.h
 CMakeFiles/jojo_webserver.dir/main.cpp.o
+ /usr/jojo/CLionProjects/jojo_webserver/Buffer.h
+ /usr/jojo/CLionProjects/jojo_webserver/Epoll.h
+ /usr/jojo/CLionProjects/jojo_webserver/HttpRequest.h
+ /usr/jojo/CLionProjects/jojo_webserver/HttpResponse.h
+ /usr/jojo/CLionProjects/jojo_webserver/Server.h
+ /usr/jojo/CLionProjects/jojo_webserver/ThreadPool.h
+ /usr/jojo/CLionProjects/jojo_webserver/Timer.h
+ /usr/jojo/CLionProjects/jojo_webserver/Util.h
  /usr/jojo/CLionProjects/jojo_webserver/main.cpp

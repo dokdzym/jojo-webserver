@@ -168,3 +168,7 @@ sys/socket.h
 arpa/inet.h
 -
 
+/usr/jojo/CLionProjects/jojo_webserver/main.cpp
+Server.h
+/usr/jojo/CLionProjects/jojo_webserver/Server.h
+

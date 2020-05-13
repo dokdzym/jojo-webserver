@@ -20,7 +20,6 @@ public:
     Buffer();
     ~Buffer(){}
 	
-	//TODO in Buffer.cpp
 	ssize_t Read_Fd(int fd, int* err_no);
 	ssize_t Write_Fd(int fd, int* err_no);
 	

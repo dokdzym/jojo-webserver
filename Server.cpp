@@ -58,7 +58,7 @@ void Server::ConnectTCP()
 		
 		//Allocate resources for this connection
 		HttpRequest* request = new HttpRequest(accept_fd);
-		//TODO : Timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+		_timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
 		
 		_epoll -> Add_Epoll(accept_fd, request, (EPOLLIN | EPOLLONESHOT));
 	}
@@ -70,7 +70,7 @@ void Server::CloseTCP(HttpRequest* request)
 	if(request -> Get_Working())
 		return ;
 	//Close TCP connection only when the request is not working
-	//TODO : _timer -> Del_Timer(request);
+	_timer -> Del_Timer(request);
 	_epoll -> Del_Epoll(fd, request, 0);
 	
 	delete request;

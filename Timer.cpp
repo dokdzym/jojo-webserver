@@ -78,7 +78,7 @@ int TimerManager::Get_Next_Expire_Time()
 			continue;
 		}
 		res = std::chrono::duration_cast<MS>(timer -> Get_Expire_Time() - _cur_time).count();
-		res = res < 0 ? 0 : res;
+		res = (res < 0) ? 0 : res;
 		break;
 	}
 	return res;
