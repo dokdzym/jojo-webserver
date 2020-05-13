@@ -40,7 +40,7 @@ Buffer HttpResponse::makeResponse()
     Buffer output;
 
     if(statusCode_ == 400) {
-        doErrorResponse(output, "Swings can't parse the message");
+        doErrorResponse(output, "JOJO can't parse the message");
         return output;
     }
 
@@ -48,13 +48,13 @@ Buffer HttpResponse::makeResponse()
     // 文件找不到错误
     if(::stat(path_.data(), &sbuf) < 0) {
         statusCode_ = 404;
-        doErrorResponse(output, "Swings can't find the file");
+        doErrorResponse(output, "JOJO can't find the file");
         return output;
     }
     // 权限错误
     if(!(S_ISREG(sbuf.st_mode) || !(S_IRUSR & sbuf.st_mode))) {
         statusCode_ = 403;
-        doErrorResponse(output, "Swings can't read the file");
+        doErrorResponse(output, "JOJO can't read the file");
         return output;
     }
 
@@ -87,7 +87,7 @@ void HttpResponse::doStaticRequest(Buffer& output, long fileSize)
     output.append("Content-type: " + __getFileType() + "\r\n");
     output.append("Content-length: " + std::to_string(fileSize) + "\r\n");
     // TODO 添加头部Last-Modified: ?
-    output.append("Server: Swings\r\n");
+    output.append("Server: JOJO\r\n");
     output.append("\r\n");
 
     // 报文体
@@ -99,7 +99,7 @@ void HttpResponse::doStaticRequest(Buffer& output, long fileSize)
         munmap(mmapRet, fileSize);
         output.retrieveAll();
         statusCode_ = 404;
-        doErrorResponse(output, "Swings can't find the file");
+        doErrorResponse(output, "JOJO can't find the file");
         return;
     }
     char* srcAddr = static_cast<char*>(mmapRet);
@@ -136,16 +136,16 @@ void HttpResponse::doErrorResponse(Buffer& output, std::string message)
         return;
     }
 
-    body += "<html><title>Swings Error</title>";
+    body += "<html><title>JOJO Error</title>";
     body += "<body bgcolor=\"ffffff\">";
     body += std::to_string(statusCode_) + " : " + itr -> second + "\n";
     body += "<p>" + message + "</p>";
-    body += "<hr><em>Swings web server</em></body></html>";
+    body += "<hr><em>JOJO web server</em></body></html>";
 
     // 响应行
     output.append("HTTP/1.1 " + std::to_string(statusCode_) + " " + itr -> second + "\r\n");
     // 报文头
-    output.append("Server: Swings\r\n");
+    output.append("Server: JOJO\r\n");
     output.append("Content-type: text/html\r\n");
     output.append("Connection: close\r\n");
     output.append("Content-length: " + std::to_string(body.size()) + "\r\n\r\n");
