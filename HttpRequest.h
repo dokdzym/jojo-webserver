@@ -5,6 +5,7 @@
 #ifndef JOJO_WEBSERVER_HTTPREQUEST_H
 #define JOJO_WEBSERVER_HTTPREQUEST_H
 
+
 #include "Buffer.h"
 
 #include<iostream>
@@ -15,81 +16,89 @@
 
 class Timer;
 
-enum ParseStatus{RequestLine = 0, Headers, Body, Finished};
-enum Method{InvalidMethod = -1, GET, POST, HEAD, PUT, DELETE};
-enum HttpVersion{UnknownVersion = -1, HTTP10, HTTP11};
-
 class HttpRequest {
 public:
+    enum HttpRequestParseState { // 报文解析状态
+        ExpectRequestLine,
+        ExpectHeaders,
+        ExpectBody,
+        GotAll
+    };
+
+    enum Method { // HTTP方法
+        Invalid, Get, Post, Head, Put, Delete
+    };
+
+    enum Version { // HTTP版本
+        Unknown, HTTP10, HTTP11
+    };
+
     HttpRequest(int fd);
     ~HttpRequest();
 
-    int Read(int* httperrno);
-    int Write(int* httperrno);
-	
-	
-	//About Timer
-	void Set_Timer(Timer* timer) {_timer = timer;}
-	Timer* Get_Timer() const{return _timer;}
-	
-	
-	//About Buffer
-	void Append_Out_Buf(const Buffer& buf) {_out_buf.Append(buf);}
-	int Writable_Bytes() {return _out_buf.Readable_Bytes();}
-	
-	
-	//Get HTTP status
-    int Get_Fd() const {return _fd;}
-	int Get_Working() const {return _working;}
-	bool Parse_All() const {return Finished == _status;}
-    bool WorkingStatus() const {return _working;}
-	bool Is_KeepAlive() const;
-	
-	std::string Get_Path() const {return _path;}
-	std::string Get_Query() const {return _query;}
-    std::string Get_Header(const std::string& field) const;
-    std::string Get_Method() const;
-	
-	
-	//Set work status
-    void Set_Working() {_working = true; }
-    void Set_Not_Working() { _working = false; }
-	void Reset_Parse();
-	
-	//Parse HTTP request
-	bool Parse_Request();
-	bool Parse_Request_Line(const char* begin, const char* end);
+    int fd() { return fd_; } // 返回文件描述符
+    int read(int* savedErrno); // 读数据
+    int write(int* savedErrno); // 写数据
+
+    void appendOutBuffer(const Buffer& buf) { outBuff_.append(buf); }
+    int writableBytes() { return outBuff_.readableBytes(); }
+
+    void setTimer(Timer* timer) { timer_ = timer; }
+    Timer* getTimer() { return timer_; }
+
+    void setWorking() { working_ = true; }
+    void setNoWorking() { working_ = false; }
+    bool isWorking() const { return working_; }
+
+    bool parseRequest(); // 解析Http报文
+    bool parseFinish() { return state_ == GotAll; } // 是否解析完一个报文
+    void resetParse(); // 重置解析状态
+    std::string getPath() const { return path_; }
+    std::string getQuery() const { return query_; }
+    std::string getHeader(const std::string& field) const;
+    std::string getMethod() const;
+    bool keepAlive() const; // 是否长连接
 
 private:
-	//Set path/method/query/version
-	void Set_Path(const char* begin, const char* end);
-	bool Set_Method(const char* begin, const char* end);
-	void Set_Query(const char* begin, const char* end);
-	void Set_Version(HttpVersion version);
-	void Add_Head(const char* start, const char* colon, const char* end);
-	
+    // 解析请求行
+    bool __parseRequestLine(const char* begin, const char* end);
+    // 设置HTTP方法
+    bool __setMethod(const char* begin, const char* end);
+    // 设置URL路径
+    void __setPath(const char* begin, const char* end)
+    { 
+        std::string subPath;
+        subPath.assign(begin, end);
+        if(subPath == "/")
+            subPath = "/index.html";
+        path_ = STATIC_ROOT + subPath;
+    }
+    // 设置URL参数
+    void __setQuery(const char* begin, const char* end)
+    { query_.assign(begin, end); }
+    // 设置HTTP版本
+    void __setVersion(Version version) 
+    { version_ = version; }
+    // 增加报文头
+    void __addHeader(const char* start, const char* colon, const char* end);
+
 private:
-	//About basic attribution
-    int _fd;
-    bool _working;
-	
-	//About Timer
-	Timer* _timer;
-	
-	//About Buffer
-	Buffer _in_buf;
-	Buffer _out_buf;
-	
-	//About HTTP request
-	std::string _URL;
-	std::string _URL_Parameter;
-	ParseStatus _status;
-	Method _method;
-	HttpVersion _version;
-	std::string _path;
-	std::string _query;
-    std::map<std::string, std::string> _header; // 报文头部
-};
+    // 网络通信相关
+    int fd_; // 文件描述符
+    Buffer inBuff_; // 读缓冲区
+    Buffer outBuff_; // 写缓冲区
+    bool working_; // 若正在工作，则不能被超时事件断开连接
 
+    // 定时器相关
+    Timer* timer_;
 
-#endif //JOJO_WEBSERVER_HTTPREQUEST_H
+    // 报文解析相关
+    HttpRequestParseState state_; // 报文解析状态
+    Method method_; // HTTP方法
+    Version version_; // HTTP版本
+    std::string path_; // URL路径
+    std::string query_; // URL参数
+    std::map<std::string, std::string> headers_; // 报文头部
+}; // class HttpRequest
+
+#endif

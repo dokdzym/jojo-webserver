@@ -1,52 +1,58 @@
-//
-// Created by jojo on 2020/5/3.
-//
-
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(int num_threads):_shutdown(true)
+#include <iostream>
+#include <cassert>
+
+//using namespace swings;
+
+ThreadPool::ThreadPool(int numWorkers)
+    : stop_(false)
 {
-	num_threads = num_threads <= 0 ? 1 : num_threads;
-	
-	for(int i = 0; i < num_threads; ++ i)
-		_threads.emplace_back(
-		[this]()
-		{
-			while(true)
-			{
-				ThreadFunction func;
-				{
-				std::unique_lock<std::mutex> lock(_lock);
-				while(_shutdown && _jobs.empty())
-					_cond.wait(lock);
-				if(_jobs.empty() && !_shutdown)
-					return ;
-				func = _jobs.front(); //Thread get a job
-				_jobs.pop();  //Job lists pop first job out
-				}//free lock
-			if(func)
-				func();
-			}
-		}
-		);
+    numWorkers = numWorkers <= 0 ? 1 : numWorkers;
+    for(int i = 0; i < numWorkers; ++i)
+        threads_.emplace_back([this]() {
+            while(1) {
+                JobFunction func;
+                {
+                    std::unique_lock<std::mutex> lock(lock_);    
+                    while(!stop_ && jobs_.empty())
+                        cond_.wait(lock);
+                    if(jobs_.empty() && stop_) {
+                        // printf("[ThreadPool::ThreadPool] threadid = %lu return\n", pthread_self());
+                        return;
+                    }
+                    // if(!jobs_.empty()) {
+                    func = jobs_.front();
+                    jobs_.pop();
+                    // }
+                }
+                if(func) {
+                    // printf("[ThreadPool::ThreadPool] threadid = %lu get a job\n", pthread_self()/*std::this_thread::get_id()*/);
+                    func();
+                    // printf("[ThreadPool::ThreadPool] threadid = %lu job finish\n", pthread_self()/*std::this_thread::get_id()*/);
+                } 
+            }
+        });
 }
 
 ThreadPool::~ThreadPool()
 {
-	{
-		std::unique_lock<std::mutex> lock(_lock);
-		_shutdown = false;
-	}//free lock
-	_cond.notify_all();
-	for(auto & thread : _threads)
-		thread.join();
+    {
+        std::unique_lock<std::mutex> lock(lock_);
+        stop_ = true;
+    } 
+    cond_.notify_all();
+    for(auto& thread: threads_)
+        thread.join();
+    // printf("[ThreadPool::~ThreadPool] threadpool is remove\n");
 }
 
-void ThreadPool::AssignJob(const ThreadFunction& job)
+void ThreadPool::pushJob(const JobFunction& job)
 {
-	{
-		std::unique_lock<std::mutex> lock(_lock);
-		_jobs.push(job); //It's not an atomic operation!Watch out your lock.
-	}//free lock
-	_cond.notify_one();
+    {
+        std::unique_lock<std::mutex> lock(lock_);
+        jobs_.push(job);
+    }
+    // printf("[ThreadPool::pushJob] push new job\n");
+    cond_.notify_one();
 }

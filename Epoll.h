@@ -5,9 +5,6 @@
 #ifndef JOJO_WEBSERVER_EPOLL_H
 #define JOJO_WEBSERVER_EPOLL_H
 
-class HttpRequest;
-class ThreadPool;
-
 #include<iostream>
 #include<functional>
 #include<memory>
@@ -15,42 +12,41 @@ class ThreadPool;
 #include<sys/epoll.h> // epoll_event
 #include<cassert>     // assert
 #include<unistd.h>    //close
+#include<cstring> // perror
 
-using NewConnectionFunc = std::function<void()>;
-using CloseConnectionFunc = std::function<void(HttpRequest*)>;
-using HandleRequestFunc = std::function<void(HttpRequest*)>;
-using HandleResponseFunc = std::function<void(HttpRequest*)>;
-using Event_Lists = std::vector<epoll_event>;
+#define MAXEVENTS 1024
 
-#define MAX_EVENTS 1024
+class HttpRequest;
+class ThreadPool;
 
 class Epoll {
 public:
+    using NewConnectionCallback = std::function<void()>;
+    using CloseConnectionCallback = std::function<void(HttpRequest*)>;
+    using HandleRequestCallback = std::function<void(HttpRequest*)>;
+    using HandleResponseCallback = std::function<void(HttpRequest*)>;
+
     Epoll();
     ~Epoll();
-    int Epoll_Wait(int timeout);
+    int add(int fd, HttpRequest* request, int events); // 注册新描述符
+    int mod(int fd, HttpRequest* request, int events); // 修改描述符状态
+    int del(int fd, HttpRequest* request, int events); // 从epoll中删除描述符
+    int wait(int timeoutMs); // 等待事件发生, 返回活跃描述符数量
+    void handleEvent(int listenFd, std::shared_ptr<ThreadPool>& threadPool, int eventsNum); // 调用事件处理函数
+    void setOnConnection(const NewConnectionCallback& cb) { onConnection_ = cb; } // 设置新连接回调函数
+    void setOnCloseConnection(const CloseConnectionCallback& cb) { onCloseConnection_ = cb; } // 设置关闭连接回调函数
+    void setOnRequest(const HandleRequestCallback& cb) { onRequest_ = cb; } // 设置处理请求回调函数
+    void setOnResponse(const HandleResponseCallback& cb) { onResponse_ = cb; } // 设置响应请求回调函数
 
-    int Add_Epoll(int fd, HttpRequest * request, int events);//add
-    int Mod_Epoll(int fd, HttpRequest * request, int events);//modify
-    int Del_Epoll(int fd, HttpRequest * request, int events);//delete
+private: 
+    using EventList = std::vector<struct epoll_event>;
+    
+    int epollFd_;
+    EventList events_;
+    NewConnectionCallback onConnection_;
+    CloseConnectionCallback onCloseConnection_;
+    HandleRequestCallback onRequest_;
+    HandleResponseCallback onResponse_;
+}; // class Epoll
 
-    void Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> & threadpool, int events_num);
-
-    void Connect_(const NewConnectionFunc & Connecting_){Connecting = Connecting_;}
-    void Close_(const CloseConnectionFunc & Closing_){Closing = Closing_;}
-    void Handle_Request_(const HandleRequestFunc & Request_){HandlingRequest = Request_;}
-    void Handle_Response_(const HandleResponseFunc & Response_){HandlingResponse = Response_;}
-
-private:
-    Event_Lists _events;
-    int _epoll_fd;
-
-    //the following function templates work when epoll gets an event.
-    NewConnectionFunc Connecting;
-    CloseConnectionFunc Closing;
-    HandleRequestFunc HandlingRequest;
-    HandleResponseFunc HandlingResponse;
-};
-
-
-#endif //JOJO_WEBSERVER_EPOLL_H
+#endif

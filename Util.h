@@ -5,21 +5,13 @@
 #ifndef JOJO_WEBSERVER_UTIL_H
 #define JOJO_WEBSERVER_UTIL_H
 
-#define LISTEN_LEN 1024
 
+#define LISTENQ 1024 // 监听队列长度,操作系统默认值为SOMAXCONN
 
-#include <iostream>
-#include <cstring> // bzero
-
-#include <stdio.h> // perror
-#include <unistd.h> // fcntl, close
-#include <fcntl.h> // fcntl
-#include <sys/socket.h> // socket, setsockopt, bind, listen
-#include <arpa/inet.h> // htonl, htons
-namespace Util
-{
-    int Create_Epoll(int port);
-    int Set_Non_Blocking(int fd);
+namespace utils {
+    int createListenFd(int port); // 创建监听描述符
+    int setNonBlocking(int fd); // 设置非阻塞模式
 }
 
-#endif //JOJO_WEBSERVER_UTIL_H
+
+#endif

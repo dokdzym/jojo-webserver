@@ -9,9 +9,9 @@
 #include<map>
 #include<iostream>
 
-class Buffer;
+#define CONNECT_TIMEOUT 500 // 非活跃连接500ms断开
 
-#define CONNECTION_TIMEOUT 512
+class Buffer;
 
 class HttpResponse {
 public:
@@ -26,7 +26,7 @@ public:
 
     ~HttpResponse() {}
 
-    Buffer Make_Response();
+    Buffer makeResponse();
     void doErrorResponse(Buffer& output, std::string message);
     void doStaticRequest(Buffer& output, long fileSize);
 
@@ -34,11 +34,11 @@ private:
     std::string __getFileType();
 
 private:
-    std::map<std::string, std::string> headers_; 
-    int statusCode_; 
-    std::string path_; 
-    bool keepAlive_; 
-};
+    std::map<std::string, std::string> headers_; // 响应报文头部
+    int statusCode_; // 响应状态码
+    std::string path_; // 请求资源路径
+    bool keepAlive_; // 长连接
+}; // class HttpResponse
 
 
-#endif //JOJO_WEBSERVER_HTTPRESPONSE_H
+#endif

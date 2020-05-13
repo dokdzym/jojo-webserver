@@ -5,51 +5,47 @@
 #ifndef JOJO_WEBSERVER_SERVER_H
 #define JOJO_WEBSERVER_SERVER_H
 
-#include "HttpRequest.h"
-#include "HttpResponse.h"
-#include "Util.h"
-#include "Epoll.h"
-#include "ThreadPool.h"
-#include "Timer.h"
+#include <memory> // unique_ptr
+#include <mutex>
 
-#include<memory> //C++ 11 locks
-#include<mutex>
+#define TIMEOUTMS -1 // epoll_wait超时时间，-1表示不设超时
+#define CONNECT_TIMEOUT 500 // 连接默认超时时间
+#define NUM_WORKERS 4 // 线程池大小
 
-#define TIMEOUT -1 //epoll_wait timeout(default : no timeout)
-#define CONNECTION_TIMEOUT 512
-#define NUM_THREADS 4 //size of thread pool
+//namespace swings {
 
+// 前置声明，不需要包含HttpRequest.h和Epoll.h
 class HttpRequest;
 class Epoll;
 class ThreadPool;
 class TimerManager;
 
-using TheadPoolPtr = std::shared_ptr<ThreadPool>;
-using ListenPtr    = std::unique_ptr<HttpRequest>;
-using EpollPtr     = std::unique_ptr<Epoll>;
-using TimerPtr     = std::unique_ptr<TimerManager>;
-
-
-class Server {
+class HttpServer {
 public:
-    //Initializing function
-	Server(int port, int num_threads);
-    ~Server();
-    void Run();
-	
-	//Work function
-	void ConnectTCP();
-	void CloseTCP(HttpRequest* request);
-	void HandleRequest(HttpRequest* request);
-	void HandleResponse(HttpRequest* request);
-	
+    HttpServer(int port, int numThread);
+    ~HttpServer();
+    void run(); // 启动HTTP服务器
+    
 private:
-    int _port;
-    int _listen_fd;
-	
-	TheadPoolPtr _threadpool;
-	ListenPtr _listen;
-	EpollPtr _epoll;
-	TimerPtr _timer;
-};
-#endif //JOJO_WEBSERVER_SERVER_H
+    void __acceptConnection(); // 接受新连接
+    void __closeConnection(HttpRequest* request); // 关闭连接
+    void __doRequest(HttpRequest* request); // 处理HTTP请求报文，这个函数由线程池调用
+    void __doResponse(HttpRequest* request);
+
+private:
+    using ListenRequestPtr = std::unique_ptr<HttpRequest>;
+    using EpollPtr = std::unique_ptr<Epoll>;
+    using ThreadPoolPtr = std::shared_ptr<ThreadPool>;
+    using TimerManagerPtr = std::unique_ptr<TimerManager>;
+
+    int port_; // 监听端口
+    int listenFd_; // 监听套接字
+    ListenRequestPtr listenRequest_; // 监听套接字的HttpRequest实例
+    EpollPtr epoll_; // epoll实例
+    ThreadPoolPtr threadPool_; // 线程池
+    TimerManagerPtr timerManager_; // 定时器管理器
+}; // class HttpServer
+
+//} // namespace swings
+
+#endif

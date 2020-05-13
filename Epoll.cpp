@@ -1,91 +1,86 @@
-//
-// Created by jojo on 2020/5/3.
-//
-
 #include "Epoll.h"
 #include "HttpRequest.h"
 #include "ThreadPool.h"
-Epoll::Epoll() :_epoll_fd(epoll_create1(EPOLL_CLOEXEC)),
-                _events (MAX_EVENTS)
+
+Epoll::Epoll() 
+    : epollFd_(::epoll_create1(EPOLL_CLOEXEC)),
+      events_(MAXEVENTS)
 {
-    assert(_epoll_fd >= 0);
+    assert(epollFd_ >= 0);
 }
 
-Epoll::~Epoll() {
-    close(_epoll_fd);
+Epoll::~Epoll()
+{
+    ::close(epollFd_);
 }
 
-int Epoll::Epoll_Wait(int timeout) {
-    int events_num = epoll_wait(_epoll_fd, &*_events.begin(), static_cast<int>(_events.size()), timeout);
-    if(events_num < 0)
-    {
-        std::cout << "Error occurs in Epoll.cpp! Epoll wait failed! errno = " << errno << std::endl;
-        return - 1;
+int Epoll::add(int fd, HttpRequest* request, int events)
+{
+    struct epoll_event event;
+    event.data.ptr = (void*)request; // XXX 使用cast系列函数
+    event.events = events;
+    int ret = ::epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &event);
+    return ret;
+}
+
+int Epoll::mod(int fd, HttpRequest* request, int events)
+{
+    struct epoll_event event;
+    event.data.ptr = (void*)request; // XXX 使用cast系列函数
+    event.events = events;
+    int ret = ::epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &event);
+    return ret;
+}
+
+int Epoll::del(int fd, HttpRequest* request, int events)
+{
+    struct epoll_event event;
+    event.data.ptr = (void*)request; // XXX 使用cast系列函数
+    event.events = events;
+    int ret = ::epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, &event);
+    return ret;
+}
+
+int Epoll::wait(int timeoutMs)
+{
+    int eventsNum = ::epoll_wait(epollFd_, &*events_.begin(), static_cast<int>(events_.size()), timeoutMs);
+    if(eventsNum == 0) {
+        // printf("[Epoll::wait] nothing happen, epoll timeout\n");
+    } else if(eventsNum < 0) {
+        printf("[Epoll::wait] epoll : %s\n", strerror(errno));
     }
-    return events_num;
+    
+    return eventsNum;
 }
 
-int Epoll::Add_Epoll(int fd, HttpRequest *request, int events) {
-    struct epoll_event event;
-    event.events = events;
-    event.data.ptr = (void*)request;
-    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &event);
-    return ret;
-}
+void Epoll::handleEvent(int listenFd, std::shared_ptr<ThreadPool>& threadPool, int eventsNum)
+{
+    assert(eventsNum > 0);
+    for(int i = 0; i < eventsNum; ++i) {
+        HttpRequest* request = (HttpRequest*)(events_[i].data.ptr); // XXX 使用cast系列函数
+        int fd = request -> fd();
 
-int Epoll::Mod_Epoll(int fd, HttpRequest *request, int events) {
-    struct epoll_event event;
-    event.events = events;
-    event.data.ptr = (void*)request;
-    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &event);
-    return ret;
-}
-
-int Epoll::Del_Epoll(int fd, HttpRequest *request, int events) {
-    struct epoll_event event;
-    event.events = events;
-    event.data.ptr = (void*)request;
-    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, &event);
-    return ret;
-}
-
-void Epoll::Handle_Event(int listen_fd, std::shared_ptr<ThreadPool> &threadpool, int events_num) {
-    assert(events_num > 0);
-    for(int i = 0; i < events_num; ++ i)
-    {
-        //Get HTTP request corresponding with the event
-        //HttpRequest* request = static_cast<HttpRequest*>(events[i].data.ptr);
-        HttpRequest* request = static_cast<HttpRequest*>(_events[i].data.ptr);
-        int fd = request  -> Get_Fd();
-
-        if(fd == listen_fd)
-            Connecting(); //New connection
-        else
-        {
-            if((_events[i].events & EPOLLERR) ||
-            (_events[i].events & EPOLLHUP) ||
-            !(_events[i].events | EPOLLIN))    //ERROR EVENT!
-            {
-                //Set request in NOT-WORKING status thus free thread
-                Closing(request); //CLose connection
-            }
-            //Above handle error events : close connection.
-
-            else if(_events[i].events & EPOLLIN) //It is a HTTP request
-            {
-                //Set request in WORKING status
-				request -> Set_Working();
-                //wake up thread to handle a request
-                threadpool -> AssignJob(std::bind(HandlingRequest, request));
-            }
-            else if(_events[i].events & EPOLLOUT) //It is a HTTP response
-            {
-                //Set request in WORKING status
-				request -> Set_Not_Working();
-                //wake up thread to handle a response
-				threadpool -> AssignJob(std::bind(HandlingResponse, request));
+        if(fd == listenFd) {
+            // 新连接回调函数
+            onConnection_();
+        } else {
+            // 排除错误事件
+            if((events_[i].events & EPOLLERR) ||
+               (events_[i].events & EPOLLHUP) ||
+               (!events_[i].events & EPOLLIN)) {
+                request -> setNoWorking();
+                // 出错则关闭连接
+                onCloseConnection_(request);
+            } else if(events_[i].events & EPOLLIN) {
+                request -> setWorking();
+                threadPool -> pushJob(std::bind(onRequest_, request));
+            } else if(events_[i].events & EPOLLOUT) {
+                request -> setWorking();
+                threadPool -> pushJob(std::bind(onResponse_, request));
+            } else {
+                printf("[Epoll::handleEvent] unexpected event\n");
             }
         }
     }
-    return ;
+    return;
 }

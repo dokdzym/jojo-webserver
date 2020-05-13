@@ -1,219 +1,184 @@
-//
-// Created by jojo on 2020/5/3.
-//
-
 #include "HttpRequest.h"
+
 #include<cassert>
 #include<unistd.h>
 
-HttpRequest::HttpRequest(int fd):
-    _fd(fd),
-    _working(false),
-    _status(RequestLine),
-    _method(InvalidMethod),
-    _version(UnknownVersion)
+HttpRequest::HttpRequest(int fd)
+    : fd_(fd),
+      working_(false),
+      timer_(nullptr),
+      state_(ExpectRequestLine),
+      method_(Invalid),
+      version_(Unknown)
 {
-	assert(_fd >= 0);
+    assert(fd_ >= 0);
 }
 
-HttpRequest::~HttpRequest() {
-	close(_fd);
-}
-
-int HttpRequest::Read(int* err_no) {
-	//Read from buffer and save errno;
-	int ret = _in_buf.Read_Fd(_fd, err_no);
-	return ret;
-}
-
-int HttpRequest::Write(int* err_no) {
-	//Write to buffer and save errno;
-	int ret = _in_buf.Read_Fd(_fd, err_no);
-	return ret;
-}
-
-bool HttpRequest::Is_KeepAlive() const
+HttpRequest::~HttpRequest()
 {
-	std::string status = Get_Header("Connection");
-	return ("Keep-Alive" == status)||(HTTP11 == _version && "close" != status);
+    close(fd_);
 }
 
-std::string HttpRequest::Get_Header(const std::string& field) const
+int HttpRequest::read(int* savedErrno)
 {
-	std::string res;
-	auto itr = _header.find(field);
-	if(itr != _header.end())
-		res = itr -> second;
-	return res;
+    int ret = inBuff_.readFd(fd_, savedErrno);
+    return ret;
 }
 
-std::string HttpRequest::Get_Method() const
-{	
-	std::string res;
-	if(GET == _method)
-		res = "GET";
-	else if(POST == _method)
-		res = "POST";
-	else if(HEAD == _method)
-		res = "HEAD";
-	else if(PUT == _method)
-		res = "PUT";
-	else if(DELETE == _method)
-		res = "DELETE";
-	else
-		res = "ERROR";
-	
-	return res;
+int HttpRequest::write(int* savedErrno)
+{
+    int ret = outBuff_.writeFd(fd_, savedErrno);
+    return ret;
 }
 
-void HttpRequest::Reset_Parse()
+bool HttpRequest::parseRequest()
 {
-	_status = RequestLine;
-	_method = InvalidMethod;
-	_version = UnknownVersion;
-	_path = "";
-	_query = "";
-	_header.clear();
+    bool ok = true;
+    bool hasMore = true;
+
+    while(hasMore) {
+        if(state_ == ExpectRequestLine) {
+            // 处理请求行
+            const char* crlf = inBuff_.findCRLF();
+            if(crlf) {
+                ok = __parseRequestLine(inBuff_.peek(), crlf);
+                if(ok) {
+                    inBuff_.retrieveUntil(crlf + 2);
+                    state_ = ExpectHeaders;
+                } else {
+                    hasMore = false;
+                }
+            } else {
+                hasMore = false;
+            }
+        } else if(state_ == ExpectHeaders) {
+            // 处理报文头
+            const char* crlf = inBuff_.findCRLF();
+            if(crlf) {
+                const char* colon = std::find(inBuff_.peek(), crlf, ':');
+                if(colon != crlf) {
+                    __addHeader(inBuff_.peek(), colon, crlf);
+                } else {
+                    state_ = GotAll;
+                    hasMore = false;
+                }
+                inBuff_.retrieveUntil(crlf + 2);
+            } else {
+                hasMore = false;
+            } 
+        } else if(state_ == ExpectBody) {
+            // TODO 处理报文体 
+        }
+    }
+
+    return ok;
 }
 
-bool HttpRequest::Parse_Request()
+bool HttpRequest::__parseRequestLine(const char* begin, const char* end)
 {
-	bool ok = true;
-	bool has_more = true;
-	
-	while(has_more)
-	{
-		if(RequestLine == _status) //Handle request line
-		{
-			const char* crlf = _in_buf.Find_CRLF();
-			if(crlf)
-			{
-				ok = Parse_Request_Line(_in_buf.Read_Peek(), crlf);
-				if(ok)
-				{
-					_in_buf.Retrieve_Until(crlf + 2);
-					_status = Headers;
-				}
-				else
-					has_more = false;//error occurs!
-			}
-			else
-				has_more = false;//error occurs!
-		}
-		else if(Headers == _status) //Handle headers
-		{
-			const char* crlf = _in_buf.Find_CRLF();
-			if(crlf)
-			{
-				const char* colon = std::find(_in_buf.Read_Peek(), crlf, ':');
-				if(colon != crlf)
-					Add_Head(_in_buf.Read_Peek(), colon, crlf);
-				else
-				{
-					_status = Finished;
-					has_more = false;
-				}
-				_in_buf.Retrieve_Until(crlf + 2);
-			}
-			else
-				has_more =false;
-		}
-		else if(Body == _status)
-			;//Handle body
-	}
-	return ok;
+    bool succeed = false;
+    const char* start = begin;
+    const char* space = std::find(start, end, ' ');
+    if(space != end && __setMethod(start, space)) {
+        start = space + 1;
+        space = std::find(start, end, ' ');
+        if(space != end) {
+            const char* question = std::find(start, space, '?');
+            if(question != space) {
+                __setPath(start, question);
+                __setQuery(question, space);
+            } else {
+                __setPath(start, space);
+            }
+            start = space + 1;
+            succeed = end - start == 8 && std::equal(start, end - 1, "HTTP/1.");
+            if(succeed) {
+                if(*(end - 1) == '1')
+                    __setVersion(HTTP11);
+                else if(*(end - 1) == '0')
+                    __setVersion(HTTP10);
+                else
+                    succeed = false;
+            } 
+        }
+    }
+
+    return succeed;
 }
 
-bool HttpRequest::Parse_Request_Line(const char* begin, const char* end)
+bool HttpRequest::__setMethod(const char* start, const char* end)
 {
-	bool finished = false;
-	const char* start = begin;
-	const char* space = std::find(start, end, ' ');
-	
-	if(space != end && Set_Method(start, space))
-	{
-		start = space + 1;
-		space = std::find(start, end, ' ');
-		if(space != end)
-		{
-			const char* question_mark = std::find(start, end, '?');
-			if(question_mark != space)
-			{
-				Set_Path(start, question_mark);
-				Set_Query(question_mark, space);
-			}
-			else
-				Set_Path(start, space);
-			
-			start = space + 1;
-			finished = end - start == 8 && std::equal(start, end - 1, "HTTP/1.");
-			
-			if(finished)
-			{
-				if(*(end - 1) == '1')
-					Set_Version(HTTP11);
-				else if(*(end - 1) == '0')
-					Set_Version(HTTP10);
-				else finished = false;
-			}
-			else
-				std::cout << "Error occurs in HttpRequest.cpp! Parse_Request_Line failed! errno = " << errno << std::endl;
-		}
-	}
-	return finished;
+    std::string m(start, end);
+    if(m == "GET")
+        method_ = Get;
+    else if(m == "POST")
+        method_ = Post;
+    else if(m == "HEAD")
+        method_ = Head;
+    else if(m == "PUT")
+        method_ = Put;
+    else if(m == "DELETE")
+        method_ = Delete;
+    else
+        method_ = Invalid;
+
+    return method_ != Invalid;
 }
 
-//Following methods set path/method/query/version
-void HttpRequest::Set_Path(const char* begin, const char* end)
+void HttpRequest::__addHeader(const char* start, const char* colon, const char* end)
 {
-	std::string path;
-	path.assign(begin, end);
-	if(path == "/")
-		path = "/index.html";
-	_path = STATIC_ROOT + path;
+    std::string field(start, colon);
+    ++colon;
+    while(colon < end && *colon == ' ')
+        ++colon;
+    std::string value(colon, end);
+    while(!value.empty() && value[value.size() - 1] == ' ')
+        value.resize(value.size() - 1);
+
+    headers_[field] = value;
 }
 
-bool HttpRequest::Set_Method(const char* begin, const char* end)
+std::string HttpRequest::getMethod() const
 {
-	std::string method(begin, end);
-	if("GET" == method)
-		_method = GET;
-	else if("POST" == method)
-		_method = POST;
-	else if("HEAD" == method)
-		_method = HEAD;
-	else if("PUT" == method)
-		_method = PUT;
-	else if("DELETE" == method)
-		_method = DELETE;
-	else
-		_method = InvalidMethod;
-	
-	return _method != InvalidMethod;
-	
-} 
-
-void HttpRequest::Set_Query(const char* begin, const char* end) 
-{
-	_query.assign(begin, end);
+    std::string res;
+    if(method_ == Get)
+        res = "GET";
+    else if(method_ == Post)
+        res = "POST";
+    else if(method_ == Head)
+        res = "HEAD";
+    else if(method_ == Put)
+        res = "Put";
+    else if(method_ == Delete)
+        res = "DELETE";
+    
+    return res;
 }
 
-void HttpRequest::Set_Version(HttpVersion version)
+std::string HttpRequest::getHeader(const std::string& field) const
 {
-	_version = version;
+    std::string res;
+    auto itr = headers_.find(field);
+    if(itr != headers_.end())
+        res = itr -> second;
+    return res;
 }
 
-
-void HttpRequest::Add_Head(const char* start, const char* colon, const char* end)
+bool HttpRequest::keepAlive() const
 {
-	std::string field(start, colon);
-	++ colon;
-	while(colon < end && ' ' == *colon)
-		++ colon;//skip spaces at the beginning
-	
-	std::string str(colon, end);
-	while(!str.empty() && str[str.size() - 1] == ' ')
-		str.resize(str.size() - 1);//Delete spaces at the end
+    std::string connection = getHeader("Connection");
+    bool res = connection == "Keep-Alive" || 
+               (version_ == HTTP11 && connection != "close");
 
-	_header[field] = str;
+    return res;
+}
+
+void HttpRequest::resetParse()
+{
+    state_ = ExpectRequestLine; // 报文解析状态
+    method_ = Invalid; // HTTP方法
+    version_ = Unknown; // HTTP版本
+    path_ = ""; // URL路径
+    query_ = ""; // URL参数
+    headers_.clear(); // 报文头部
 }

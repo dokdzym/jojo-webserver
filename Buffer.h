@@ -12,109 +12,140 @@
 #include <unistd.h> //close
 #include <cassert>
 
-#define BUFFER_SIZE 1024
+#define INIT_SIZE 1024
 
-class Buffer
-{
+class Buffer {
 public:
-    Buffer();
-    ~Buffer(){}
-	
-	ssize_t Read_Fd(int fd, int* err_no);
-	ssize_t Write_Fd(int fd, int* err_no);
-	
-	size_t Readable_Bytes() const {return _writer_index - _reader_index;}
-	size_t Writable_Bytes() const {return BUFFER_SIZE - _writer_index;}
-	size_t Prependable_Bytes( )const {return _reader_index;}
-	
-	//Get first readable/writable position
-	const char* Read_Peek() const {return Buffer_Begin() + _reader_index;}
-	const char* Write_Peek() const {return Buffer_Begin() + _writer_index;}
-	char* Write_Peek() {return Buffer_Begin() + _writer_index;}
-	
-	//Change reader_index 
-	void Retrieve(size_t len){assert(len <= Readable_Bytes()); _reader_index += len;}
-	void Retrieve_Until(const char* end)
-	{
-		assert(Write_Peek() <= end);
-		assert(end <=  Write_Peek());
-		Retrieve(end - Read_Peek());
-	}
-	void Reset_Index(){_reader_index = _writer_index = 0;}
-	
-	std::string Retrieve_String()
-	{
-		std::string res(Read_Peek(), Readable_Bytes());
-		Reset_Index();
-		return res;
-	}
-	
-	void Ensure_Enough_For_Write(size_t len)
-	{
-		if(Writable_Bytes() < len)
-			Make_Space(len);
-		assert(Writable_Bytes() >= len);
-	}
-	
-	//Add data to buffer
-	void Append(const char* data, size_t len)
-	{
-		Ensure_Enough_For_Write(len);
-		std::copy(data, data + len, Write_Peek());
-        _writer_index += len;
-	}
-	
-	void Append(const std::string& str)
-	{
-		Append(str.data(), str.size());
-	}
-	
-	void Append(const Buffer& b)
-	{
-		Append(b.Read_Peek(), b.Readable_Bytes());
-	}
-	
-	const char* Find_CRLF() const
+    Buffer()
+        : buffer_(INIT_SIZE),
+          readerIndex_(0),
+          writerIndex_(0)
     {
-        const char CRLF[] = "\r\n";
-        const char* crlf = std::search(Read_Peek(), Write_Peek(), CRLF, CRLF+2);
-        return crlf == Write_Peek() ? nullptr : crlf;
+        assert(readableBytes() == 0);
+        assert(writableBytes() == INIT_SIZE);
+    }
+    ~Buffer() {}
+
+    // 默认拷贝构造函数和赋值函数可用
+
+    size_t readableBytes() const // 可读字节数
+    { return writerIndex_ - readerIndex_; }
+
+    size_t writableBytes() const // 可写字节数
+    { return buffer_.size() - writerIndex_; }
+
+    size_t prependableBytes() const // readerIndex_前面的空闲缓冲区大小
+    { return readerIndex_; }
+
+    const char* peek() const // 第一个可读位置
+    { return __begin() + readerIndex_; }
+
+    void retrieve(size_t len) // 取出len个字节 
+    {
+        assert(len <= readableBytes());
+        readerIndex_ += len;
     }
 
-    const char* Find_CRLF(const char* start) const
+    void retrieveUntil(const char* end) // 取出数据直到end
     {
-        assert(Read_Peek() <= start);
-        assert(start <= Write_Peek());
-        const char CRLF[] = "\r\n";
-        const char* crlf = std::search(start, Write_Peek(), CRLF, CRLF + 2);
-        return crlf == Write_Peek() ? nullptr : crlf;
+        assert(peek() <= end);
+        assert(end <= beginWrite());
+        retrieve(end - peek());
     }
-	
-private:
-	char* Buffer_Begin(){return &*_buffer.begin();}
-    const char* Buffer_Begin() const {return &*_buffer.begin();}
-	
-	void Make_Space(size_t len)
-	{
-		if(Writable_Bytes() + Prependable_Bytes() < len)
-			_buffer.resize(_writer_index + len);
-		else
-		{
-			size_t readble = Readable_Bytes();
-			std::copy(Buffer_Begin() + _reader_index,
-					  Buffer_Begin() + _writer_index,
-					  Buffer_Begin());
-            _reader_index = 0;
-            _writer_index = readble;
-			assert(readble == Readable_Bytes());
-		}
-	}
+
+    void retrieveAll() // 取出buffer内全部数据
+    {
+        readerIndex_ = 0;
+        writerIndex_ = 0;
+    }
+
+    std::string retrieveAsString() // 以string形式取出全部数据
+    {
+        std::string str(peek(), readableBytes());
+        retrieveAll();
+        return str;
+    }
+
+    void append(const std::string& str) // 插入数据
+    { append(str.data(), str.length()); }
+
+    void append(const char* data, size_t len) // 插入数据
+    {
+        ensureWritableBytes(len);
+        std::copy(data, data + len, beginWrite());
+        hasWritten(len);
+    }
+
+    void append(const void* data, size_t len) // 插入数据
+    { append(static_cast<const char*>(data), len); }
+
+    void append(const Buffer& otherBuff) // 把其它缓冲区的数据添加到本缓冲区
+    { append(otherBuff.peek(), otherBuff.readableBytes()); }
+
+    void ensureWritableBytes(size_t len) // 确保缓冲区有足够空间
+    {
+        if(writableBytes() < len) {
+            __makeSpace(len);
+        }
+        assert(writableBytes() >= len);
+    }
+
+    char* beginWrite() // 可写char指针
+    { return __begin() + writerIndex_; }
+
+    const char* beginWrite() const
+    { return __begin() + writerIndex_; }
+
+    void hasWritten(size_t len) // 写入数据后移动writerIndex_
+    { writerIndex_ += len; }
+
+    ssize_t readFd(int fd, int* savedErrno); // 从套接字读到缓冲区
+    ssize_t writeFd(int fd, int* savedErrno); // 缓冲区写到套接字
+
+    const char* findCRLF() const
+    {
+        const char CRLF[] = "\r\n";
+        const char* crlf = std::search(peek(), beginWrite(), CRLF, CRLF+2);
+        return crlf == beginWrite() ? nullptr : crlf;
+    }
+
+    const char* findCRLF(const char* start) const
+    {
+        assert(peek() <= start);
+        assert(start <= beginWrite());
+        const char CRLF[] = "\r\n";
+        const char* crlf = std::search(start, beginWrite(), CRLF, CRLF + 2);
+        return crlf == beginWrite() ? nullptr : crlf;
+    }
 
 private:
-	std::vector<char> _buffer;
-	size_t _reader_index;
-	size_t _writer_index;
-};
+    char* __begin() // 返回缓冲区头指针
+    { return &*buffer_.begin(); }
 
+    const char* __begin() const // 返回缓冲区头指针
+    { return &*buffer_.begin(); }
 
-#endif //JOJO_WEBSERVER_BUFFER_H
+    void __makeSpace(size_t len) // 确保缓冲区有足够空间
+    {
+        if(writableBytes() + prependableBytes() < len) {
+            buffer_.resize(writerIndex_ + len);
+        }
+        else {
+            size_t readable = readableBytes();
+            std::copy(__begin() + readerIndex_,
+                      __begin() + writerIndex_,
+                      __begin());
+            readerIndex_ = 0;
+            writerIndex_ = readerIndex_ + readable;
+            assert(readable == readableBytes());
+        }
+    }
+
+private:
+
+    std::vector<char> buffer_;
+    size_t readerIndex_;
+    size_t writerIndex_;
+}; // class Buffer
+
+#endif

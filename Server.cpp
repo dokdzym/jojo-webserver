@@ -1,176 +1,192 @@
-//
-// Created by jojo on 2020/5/3.
-//
-
 #include "Server.h"
 
+#include "HttpRequest.h"
+#include "HttpResponse.h"
+#include "Util.h"
+#include "Epoll.h"
+#include "ThreadPool.h"
+#include "Timer.h"
 
-Server::Server(int port, int num_threads):
-	_port(port),
-	_listen_fd(Util::Create_Epoll(_port)),
-	_threadpool(new ThreadPool(num_threads)),
-	_listen(new HttpRequest(_listen_fd)),
-	_epoll(new Epoll()),
-	_timer(new TimerManager())
-	
+#include <sys/socket.h> // accept
+#include <arpa/inet.h> // sockaddr_in
+
+
+HttpServer::HttpServer(int port, int numThread) 
+    : port_(port),
+      listenFd_(utils::createListenFd(port_)),
+      listenRequest_(new HttpRequest(listenFd_)),
+      epoll_(new Epoll()),
+      threadPool_(new ThreadPool(numThread)),
+      timerManager_(new TimerManager())
 {
-	assert(_listen_fd >= 0);
+    assert(listenFd_ >= 0);
 }
 
-Server::~Server()
+HttpServer::~HttpServer()
 {
-	//Do nothing in Server.cpp   because various server sources have their own destructor.
 }
 
-void Server::Run()
+void HttpServer::run()
 {
-	_epoll -> Add_Epoll(_listen_fd, _listen.get(), (EPOLLIN | EPOLLET));
-	_epoll -> Connect_(std::bind(&Server::ConnectTCP, this));
-	_epoll -> Close_(std::bind(&Server::CloseTCP, this, std::placeholders::_1));
-	_epoll -> Handle_Request_(std::bind(&Server::HandleRequest, this, std::placeholders::_1));
-	_epoll -> Handle_Response_(std::bind(&Server::HandleResponse, this, std::placeholders::_1));
-	
-	while(true)
-	{
-		//int wait_time = _timer -> Get_Next_Expire_Time();
-		//int num_events = _epoll -> wait(wait_time);
-		
-		//if(num_events > 0)
-		//	_epoll -> Handle_Event(_listen_fd, _threadpool, num_events);
-		
-		//_timer -> Handle_Expire_Timers();
-	}
+    // 注册监听套接字到epoll（可读事件，ET模式）
+    epoll_ -> add(listenFd_, listenRequest_.get(), (EPOLLIN | EPOLLET));
+    // 注册新连接回调函数
+    epoll_ -> setOnConnection(std::bind(&HttpServer::__acceptConnection, this));
+    // 注册关闭连接回调函数
+    epoll_ -> setOnCloseConnection(std::bind(&HttpServer::__closeConnection, this, std::placeholders::_1));
+    // 注册请求处理回调函数
+    epoll_ -> setOnRequest(std::bind(&HttpServer::__doRequest, this, std::placeholders::_1));
+    // 注册响应处理回调函数
+    epoll_ -> setOnResponse(std::bind(&HttpServer::__doResponse, this, std::placeholders::_1));
+
+    // 事件循环
+    while(1) {
+        int timeMS = timerManager_ -> getNextExpireTime();
+        // 等待事件发生
+        // int eventsNum = epoll_ -> wait(TIMEOUTMS);
+        int eventsNum = epoll_ -> wait(timeMS);
+
+        if(eventsNum > 0) {
+            // 分发事件处理函数
+            epoll_ -> handleEvent(listenFd_, threadPool_, eventsNum);
+        }
+        timerManager_ -> handleExpireTimers();   
+    }
 }
 
-void Server::ConnectTCP()
+// ET
+void HttpServer::__acceptConnection()
 {
-	while(true)
-	{
-		int accept_fd = accept4(_listen_fd, nullptr, nullptr, (SOCK_NONBLOCK | SOCK_CLOEXEC));
-		if(accept_fd == -1)
-		{
-			if(errno == EAGAIN)
-				break;
-			
-			std::cout << "Error occurs in Server.cpp! accept4 failed! errno = " << errno << std::endl;
-			break;
-		}
-		
-		//Allocate resources for this connection
-		HttpRequest* request = new HttpRequest(accept_fd);
-		_timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
-		
-		_epoll -> Add_Epoll(accept_fd, request, (EPOLLIN | EPOLLONESHOT));
-	}
+    while(1) {
+        int acceptFd = ::accept4(listenFd_, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
+        if(acceptFd == -1) {
+            if(errno == EAGAIN)
+                break;
+            printf("[HttpServer::__acceptConnection] accept : %s\n", strerror(errno));
+            break;
+        }
+        // 为新的连接套接字分配HttpRequest资源
+        HttpRequest* request = new HttpRequest(acceptFd);
+        timerManager_ -> addTimer(request, CONNECT_TIMEOUT, std::bind(&HttpServer::__closeConnection, this, request));
+        // 注册连接套接字到epoll（可读，边缘触发，保证任一时刻只被一个线程处理）
+        epoll_ -> add(acceptFd, request, (EPOLLIN | EPOLLONESHOT));
+    }
 }
 
-void Server::CloseTCP(HttpRequest* request)
+void HttpServer::__closeConnection(HttpRequest* request)
 {
-	int fd = request -> Get_Fd();
-	if(request -> Get_Working())
-		return ;
-	//Close TCP connection only when the request is not working
-	_timer -> Del_Timer(request);
-	_epoll -> Del_Epoll(fd, request, 0);
-	
-	delete request;
-	request = nullptr;
+    int fd = request -> fd();
+    if(request -> isWorking()) {
+        return;
+    }
+    // printf("[HttpServer::__closeConnection] connect fd = %d is closed\n", fd);
+    timerManager_ -> delTimer(request);
+    epoll_ -> del(fd, request, 0);
+    // 释放该套接字占用的HttpRequest资源，在析构函数中close(fd)
+    delete request;
+    request = nullptr;
 }
 
-void Server::HandleRequest(HttpRequest* request)
+// LT模式
+void HttpServer::__doRequest(HttpRequest* request)
 {
-	_timer -> Del_Timer(request);
-	assert(request != nullptr);
-	int fd = request -> Get_Fd();
-	
-	int read_errno;
-	int nread = request -> Read(&read_errno);
-	
-	//Server close the connection OR error occurs ；close TCP
-	if(0 == nread || (nread < 0 && (read_errno != EAGAIN)))
-	{
-		request -> Set_Not_Working();
-		CloseTCP(request);
-		return ;
-	}
-	
-	//EAGAIN occurs : free thread, continue listening
-	if(nread < 0 && read_errno == EAGAIN)
-	{
-		_epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
-		request -> Set_Not_Working();
-		_timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
-		return ;
-	}
-	
-	//Parse failed
-	if(!request -> Parse_Request())
-	{
-		//HTTP status code 400
-		HttpResponse response(400, "", false);
-		request -> Append_Out_Buf(response.Make_Response());
-		
-		int write_errno;
-		request -> Write(&write_errno);
-		request -> Set_Not_Working();
-		CloseTCP(request);
-		return ;
-	}
-	
-	//Parse succeed
-	if(request -> Parse_All())
-	{
-        HttpResponse response(200, request -> Get_Path(), request -> Is_KeepAlive());
-		request -> Append_Out_Buf(response.Make_Response());
-		_epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
-	}
-	
-}
-
-void Server::HandleResponse(HttpRequest* request)
-{
-	_timer -> Del_Timer(request);
+    timerManager_ -> delTimer(request);
     assert(request != nullptr);
-    int fd = request -> Get_Fd();
+    int fd = request -> fd();
 
-    int to_write = request -> Writable_Bytes();
+    int readErrno;
+    int nRead = request -> read(&readErrno);
 
-    if(to_write == 0) {
-        _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
-        request -> Set_Not_Working();
-        _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
-        return ;
+    // read返回0表示客户端断开连接
+    if(nRead == 0) {
+        request -> setNoWorking();
+        __closeConnection(request);
+        return; 
     }
 
-    int write_errno;
-    int ret = request -> Write(&write_errno);
-
-    if(ret < 0 && write_errno == EAGAIN) {
-        _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
-        return ;
+    // 非EAGAIN错误，断开连接
+    if(nRead < 0 && (readErrno != EAGAIN)) {
+        request -> setNoWorking();
+        __closeConnection(request);
+        return; 
     }
 
-    if(ret < 0 && (write_errno != EAGAIN)) {
-        request -> Set_Not_Working();
-        CloseTCP(request);
-        return ; 
+    // EAGAIN错误则释放线程使用权，并监听下次可读事件epoll_ -> mod(...)
+    if(nRead < 0 && readErrno == EAGAIN) {
+        epoll_ -> mod(fd, request, (EPOLLIN | EPOLLONESHOT));
+        request -> setNoWorking();
+        timerManager_ -> addTimer(request, CONNECT_TIMEOUT, std::bind(&HttpServer::__closeConnection, this, request));
+        return;
     }
 
-    if(ret == to_write) {
-        if(request -> Is_KeepAlive()) {
-            request -> Reset_Parse();
-            _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLONESHOT));
-            request -> Set_Not_Working();
-            _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+    // 解析报文，出错则断开连接
+    if(!request -> parseRequest()) {
+        // 发送400报文
+        HttpResponse response(400, "", false);
+        request -> appendOutBuffer(response.makeResponse());
+
+        // XXX 立刻关闭连接了，所以就算没写完也只能写一次？
+        int writeErrno;
+        request -> write(&writeErrno);
+        request -> setNoWorking();
+        __closeConnection(request); 
+        return; 
+    }
+
+    // 解析完成
+    if(request -> parseFinish()) {
+        HttpResponse response(200, request -> getPath(), request -> keepAlive());
+        request -> appendOutBuffer(response.makeResponse());
+        epoll_ -> mod(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+    }
+}
+
+// LT模式
+void HttpServer::__doResponse(HttpRequest* request)
+{
+    timerManager_ -> delTimer(request);
+    assert(request != nullptr);
+    int fd = request -> fd();
+
+    int toWrite = request -> writableBytes();
+
+    if(toWrite == 0) {
+        epoll_ -> mod(fd, request, (EPOLLIN | EPOLLONESHOT));
+        request -> setNoWorking();
+        timerManager_ -> addTimer(request, CONNECT_TIMEOUT, std::bind(&HttpServer::__closeConnection, this, request));
+        return;
+    }
+
+    int writeErrno;
+    int ret = request -> write(&writeErrno);
+
+    if(ret < 0 && writeErrno == EAGAIN) {
+        epoll_ -> mod(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+        return;
+    }
+
+    // 非EAGAIN错误，断开连接
+    if(ret < 0 && (writeErrno != EAGAIN)) {
+        request -> setNoWorking();
+        __closeConnection(request);
+        return; 
+    }
+
+    if(ret == toWrite) {
+        if(request -> keepAlive()) {
+            request -> resetParse();
+            epoll_ -> mod(fd, request, (EPOLLIN | EPOLLONESHOT));
+            request -> setNoWorking();
+            timerManager_ -> addTimer(request, CONNECT_TIMEOUT, std::bind(&HttpServer::__closeConnection, this, request));
         } else {
-            request -> Set_Not_Working();
-            CloseTCP(request);
+            request -> setNoWorking();
+            __closeConnection(request);
         }
         return;
     }
 
-    _epoll -> Mod_Epoll(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
-    request -> Set_Not_Working();
-    _timer -> Add_Timer(request, CONNECTION_TIMEOUT, std::bind(&Server::CloseTCP, this, request));
+    epoll_ -> mod(fd, request, (EPOLLIN | EPOLLOUT | EPOLLONESHOT));
+    request -> setNoWorking();
+    timerManager_ -> addTimer(request, CONNECT_TIMEOUT, std::bind(&HttpServer::__closeConnection, this, request));
     return;
 }

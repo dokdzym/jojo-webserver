@@ -1,35 +1,31 @@
-//
-// Created by jojo on 2020/5/3.
-//
+#ifndef __THREAD_POOL__
+#define __THREAD_POOL__
 
-#ifndef JOJO_WEBSERVER_THREADPOOL_H
-#define JOJO_WEBSERVER_THREADPOOL_H
+#include <vector>
+#include <queue>
+#include <thread>
+#include <functional>
+#include <mutex>
+#include <condition_variable>
 
-#include<iostream>
-#include<functional>
-#include<thread>
-#include<queue>
-#include<mutex>
-#include<condition_variable>
-#include<cassert>
-
-using ThreadFunction = std::function<void()>;
+//namespace swings {
 
 class ThreadPool {
 public:
-	ThreadPool(int num_threads);
-	~ThreadPool();
-	
-	void AssignJob(const ThreadFunction& job);
+    using JobFunction = std::function<void()>;
+
+    ThreadPool(int numWorkers);
+    ~ThreadPool();
+    void pushJob(const JobFunction& job);
 
 private:
-	std::vector<std::thread> _threads;
-	std::queue<ThreadFunction> _jobs;
-	std::mutex _lock;
-	std::condition_variable _cond;
-	
-	bool _shutdown;//whether turn off the thread-pool power or not
+    std::vector<std::thread> threads_;
+    std::mutex lock_;
+    std::condition_variable cond_;
+    std::queue<JobFunction> jobs_;
+    bool stop_;
 };
 
+//}
 
-#endif //JOJO_WEBSERVER_THREADPOOL_H
+#endif

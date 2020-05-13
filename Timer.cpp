@@ -1,93 +1,87 @@
-//
-// Created by jojo on 2020/5/3.
-//
-
 #include "Timer.h"
 #include "HttpRequest.h"
 
-void TimerManager::Add_Timer(HttpRequest* request, const int& timeout, const TimeoutFunction& func)
+#include <cassert>
+
+void TimerManager::addTimer(HttpRequest* request, 
+                     const int& timeout, 
+                     const TimeoutCallBack& cb)
 {
-	std::unique_lock<std::mutex> lock(_lock);
-	
-	assert(request != nullptr);
-	
-	Update_Time();
-	Timer* timer = new Timer(_cur_time + MS(timeout), func);
-	_timer_queue.push(timer);//push a new timer
-	
-	if(request -> Get_Timer() != nullptr) //Already got a timer
-		Del_Timer(request); //Delete old timer
-		
-	request -> Set_Timer(timer);
-}
-					 
-void TimerManager::Del_Timer(HttpRequest* request)
-{
-	//Watch out ! Don't lock in this function
-	assert(request != nullptr);
-	
-	Timer* timer = request -> Get_Timer(); //copy this Timer* pointer
-	if(timer == nullptr)
-		return ;
-	//Lazy delete
-	timer -> Del_This(); //Set delete status
-	request -> Set_Timer(nullptr); //Avoid  "request -> Get_Timer()"  use a dangling pointer
+    std::unique_lock<std::mutex> lock(lock_);
+    assert(request != nullptr);
+
+    updateTime();
+    Timer* timer = new Timer(now_ + MS(timeout), cb);
+    timerQueue_.push(timer);
+
+    // 对同一个request连续调用两次addTimer，需要把前一个定时器删除
+    if(request -> getTimer() != nullptr)
+        delTimer(request);
+
+    request -> setTimer(timer);
 }
 
-void TimerManager::Handle_Expire_Timers()
+// 这个函数不必上锁，没有线程安全问题
+// 若上锁，反而会因为连续两次上锁造成死锁：handleExpireTimers -> runCallBack -> __closeConnection -> delTimer
+void TimerManager::delTimer(HttpRequest* request)
 {
-	std::unique_lock<std::mutex> lock(_lock);
-	
-	Update_Time();
-	
-	while(!_timer_queue.empty())
-	{
-		Timer* timer = _timer_queue.top();
-		assert(timer != nullptr);
-		
-		if(timer -> Is_Deleted())
-		{
-			_timer_queue.pop();//pop this timer
-			delete timer;
-			continue;
-		}
-		
-		if(std::chrono::duration_cast<MS>(timer -> Get_Expire_Time() - _cur_time).count() > 0)//Head timer not expire ---> all timer not expire
-			return ;
-		
-		timer -> Call_Back();
-		_timer_queue.pop();
-		delete timer;
-	}
+    // std::unique_lock<std::mutex> lock(lock_);
+    assert(request != nullptr);
+
+    Timer* timer = request -> getTimer();
+    if(timer == nullptr)
+        return;
+
+    // 如果这里写成delete timeNode，会使priority_queue里的对应指针变成垂悬指针
+    // 正确的方法是惰性删除
+    timer -> del();
+    // 防止request -> getTimer()访问到垂悬指针
+    request -> setTimer(nullptr);
 }
 
-int TimerManager::Get_Next_Expire_Time()
+void TimerManager::handleExpireTimers()
 {
-	std::unique_lock<std::mutex> lock(_lock);
-	
-	Update_Time();
-	
-	int res = -1; //return -1 when timer_queue is empty
-	while(!_timer_queue.empty())
-	{
-		Timer* timer = _timer_queue.top();
-		if(timer -> Is_Deleted())
-		{
-			_timer_queue.pop();
-			delete timer;
-			continue;
-		}
-		res = std::chrono::duration_cast<MS>(timer -> Get_Expire_Time() - _cur_time).count();
-		res = (res < 0) ? 0 : res;
-		break;
-	}
-	return res;
+    std::unique_lock<std::mutex> lock(lock_);
+    updateTime();
+    while(!timerQueue_.empty()) {
+        Timer* timer = timerQueue_.top();
+        assert(timer != nullptr);
+        // 定时器被删除
+        if(timer -> isDeleted()) {
+            // std::cout << "[TimerManager::handleExpireTimers] timer = " << Clock::to_time_t(timer -> getExpireTime())
+            //           << " is deleted" << std::endl;
+            timerQueue_.pop();
+            delete timer;
+            continue;
+        }
+        // 优先队列头部的定时器也没有超时，return
+        if(std::chrono::duration_cast<MS>(timer -> getExpireTime() - now_).count() > 0) {
+            // std::cout << "[TimerManager::handleExpireTimers] there is no timeout timer" << std::endl;
+            return;
+        }
+        // std::cout << "[TimerManager::handleExpireTimers] timeout" << std::endl;
+        // 超时
+        timer -> runCallBack();
+        timerQueue_.pop();
+        delete timer;
+    }
 }
 
-
-
-
-
-
-
-
+int TimerManager::getNextExpireTime()
+{
+    std::unique_lock<std::mutex> lock(lock_);
+    updateTime();
+    int res = -1;
+    while(!timerQueue_.empty()) {
+        Timer* timer = timerQueue_.top();
+        if(timer -> isDeleted()) {
+            timerQueue_.pop();
+            delete timer;
+            continue;
+        }
+        res = std::chrono::duration_cast<MS>(timer -> getExpireTime() - now_).count();
+        res = (res < 0) ? 0 : res;
+        break;
+    }
+    return res;
+}
