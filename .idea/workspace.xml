@@ -12,30 +12,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a263fa58-3e2e-4ca1-ae19-c2d4bd7a6986" name="默认更改列表" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Buffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Buffer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Buffer.o" beforeDir="false" afterPath="$PROJECT_DIR$/Buffer.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Epoll.o" beforeDir="false" afterPath="$PROJECT_DIR$/Epoll.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpRequest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpRequest.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpRequest.o" beforeDir="false" afterPath="$PROJECT_DIR$/HttpRequest.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HttpResponse.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/HttpResponse.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HttpResponse.h" beforeDir="false" afterPath="$PROJECT_DIR$/HttpResponse.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HttpResponse.o" beforeDir="false" afterPath="$PROJECT_DIR$/HttpResponse.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/Server.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Server.o" beforeDir="false" afterPath="$PROJECT_DIR$/Server.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Timer.o" beforeDir="false" afterPath="$PROJECT_DIR$/Timer.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Buffer.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Buffer.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/CXX.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Epoll.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Epoll.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/HttpRequest.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Server.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Server.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Timer.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/Timer.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/jojo_webserver.dir/main.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/jojo_webserver" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.o" beforeDir="false" afterPath="$PROJECT_DIR$/main.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server" beforeDir="false" afterPath="$PROJECT_DIR$/server" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,6 +72,7 @@
       <workItem from="1589188032922" duration="5442000" />
       <workItem from="1589359361156" duration="2628000" />
       <workItem from="1589362117951" duration="2673000" />
+      <workItem from="1589371919140" duration="996000" />
     </task>
     <task id="LOCAL-00001" summary="2020.5.6">
       <created>1588759306402</created>

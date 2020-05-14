@@ -12,7 +12,7 @@
 #include<string>
 #include<map>
 
-#define STATIC_ROOT "../www"
+#define STATIC_ROOT "../html"
 
 class Timer;
 

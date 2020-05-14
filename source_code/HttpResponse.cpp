@@ -135,7 +135,6 @@ void HttpResponse::doErrorResponse(Buffer& output, std::string message)
     if(itr == statusCode2Message.end()) {
         return;
     }
-
     body += "<html><title>JOJO Error</title>";
     body += "<body bgcolor=\"ffffff\">";
     body += std::to_string(statusCode_) + " : " + itr -> second + "\n";
